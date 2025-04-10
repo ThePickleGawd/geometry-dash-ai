@@ -1,3 +1,7 @@
-# Reinforcement Learning for Geometry Dash
+Guys: we are using `uv`. It will setup venv and all that and sync it. It's also faster than pip
 
-Final Project for CS 190A: Machine Learning.
+# Example
+
+`uv run main.py`
+`uv add torch`
+`uv sync # Not needed since it'll auto sync when you run`
