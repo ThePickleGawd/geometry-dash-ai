@@ -1,7 +1,16 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/PlayLayer.hpp>
+#include <Geode/modify/PlayerObject.hpp>
 
 using namespace geode::prelude;
+
+class $modify(MyPlayerObject, PlayerObject) {
+	bool pushButton(PlayerButton btn) {
+		log::info("Jump button received by player!");
+		return PlayerObject::pushButton(btn);
+	}
+};
+
 
 class $modify(MyPlayLayer, PlayLayer) {
 	bool init(GJGameLevel* level, bool p1, bool p2) {
