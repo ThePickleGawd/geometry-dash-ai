@@ -1,0 +1,14 @@
+{
+	"geode": "4.3.1",
+	"gd": {
+		"win": "2.2074",
+		"android": "2.2074",
+		"mac": "2.2074",
+		"ios": "2.2074"
+	},
+	"id": "ishan.gdrlmod",
+	"name": "GD RL",
+	"version": "1.0.0",
+	"developer": "Ishan Katpally",
+	"description": "Geometry dash reinforcement learning"
+}
