@@ -1,35 +1,53 @@
-from enum import Enum
 import gymnasium as gym
+from gymnasium import spaces
+
+from enum import Enum
+import numpy as np
+
+from tcpclient import GDClient
 
 class Actions(Enum):
-    nopress = 0
-    press = 1
+    idle = 0
+    hold = 1
 
 class GeometryDashEnv(gym.Env):
-    def __init__(self):
-        # Initialize the environment
-        pass
+    def __init__(self, host='127.0.0.1', port=22222):
+        super(GeometryDashEnv, self).__init__()
 
-    def reset(self, seed=None, options=None):
-        # Reset the environment to an initial state
+        # Connect to GD mod
+        self.client = GDClient(host, port)
+        self.client.connect()
 
-        # TODO: Get mod to reset game
+        self.action_space = spaces.Discrete(2)
 
-        pass
-        # return observation, info
+        # Placeholder observation space (e.g., dummy 1D vector)
+        self.observation_space = spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32)
+
+        # State
+        self.holding = False
 
     def step(self, action):
-        # Take an action in the environment
+        # Send action to the GD mod, only if it's different from the last one
+        if action == 1 and not self.holding:
+            self.client.send_command("hold")
+            self.holding = True
+        elif action == 0 and self.holding:
+            self.client.send_command("release")
+            self.holding = False
 
-        # TODO: We need the mod to always freeze the game. Here, we go to next frame
+        observation = np.array([0.0])  # placeholder observation
+        reward = 0.0
+        done = False
+        info = {}
 
-        pass
-        # return observation, reward, done, info
+        return observation, reward, done, info
 
-    def render(self, mode='human'):
-        # Render the environment
-        pass
+    def reset(self):
+        # Reset the level
+        self.client.send_command("reset")
+
+        observation = np.array([0.0])
+        return observation
 
     def close(self):
-        # Close the environment
-        pass
+        self.client.close()

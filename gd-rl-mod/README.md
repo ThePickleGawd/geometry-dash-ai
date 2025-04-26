@@ -1,23 +1,17 @@
-# gd-rl-mod
-This is where she makes a mod.
+# Reinforcement Learning Mod with Geode
 
-<img src="logo.png" width="150" alt="the mod's logo" />
+Mac only
 
-*Update logo.png to change your mod's icon (please)*
+## Prerequisites
 
-## Getting started
-We recommend heading over to [the getting started section on our docs](https://docs.geode-sdk.org/getting-started/) for useful info on what to do next.
+```bash
+# Install Geode
+brew install geode-sdk/geode/geode-cli
 
-## Build instructions
-For more info, see [our docs](https://docs.geode-sdk.org/getting-started/create-mod#build)
-```sh
-# Assuming you have the Geode CLI set up already
-geode build
+# Setup profile
+geode config setup
+
+# Install SDK
+geode sdk install
+geode sdk install-binaries
 ```
-
-# Resources
-* [Geode SDK Documentation](https://docs.geode-sdk.org/)
-* [Geode SDK Source Code](https://github.com/geode-sdk/geode/)
-* [Geode CLI](https://github.com/geode-sdk/cli)
-* [Bindings](https://github.com/geode-sdk/bindings/)
-* [Dev Tools](https://github.com/geode-sdk/DevTools)

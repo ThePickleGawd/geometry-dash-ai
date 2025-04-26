@@ -1,7 +1,7 @@
 import socket
 
 class GDClient:
-    def __init__(self, host='127.0.0.1', port=12345):
+    def __init__(self, host='127.0.0.1', port=22222):
         self.host = host
         self.port = port
         self.sock = None
@@ -24,12 +24,3 @@ class GDClient:
             self.sock.close()
             self.sock = None
             print("Connection closed")
-
-if __name__ == "__main__":
-    client = GDClient()
-    client.connect()
-
-    client.send_command("jump")
-    client.send_command("restart")
-
-    client.close()

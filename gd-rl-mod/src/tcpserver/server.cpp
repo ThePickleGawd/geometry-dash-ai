@@ -22,12 +22,12 @@ namespace tcpserver
 
         address.sin_family = AF_INET;
         address.sin_addr.s_addr = INADDR_ANY;
-        address.sin_port = htons(12345);
+        address.sin_port = htons(22222);
 
         bind(server_fd, (struct sockaddr *)&address, sizeof(address));
         listen(server_fd, 3);
 
-        log::info("TCP server started!");
+        log::info("Server listening on port {}", ntohs(address.sin_port));
 
         while (true)
         {
@@ -38,18 +38,31 @@ namespace tcpserver
             std::string command(buffer);
             log::info("Received command: {}", command);
 
-            if (command.find("jump") != std::string::npos)
-            {
-                if (auto pl = GameManager::sharedState()->getPlayLayer())
-                {
-                    if (auto player = pl->m_player1)
-                    {
-                        player->pushButton(PlayerButton::Jump);
-                    }
-                }
-            }
+            // if (command.find("jump") != std::string::npos)
+            // {
+            //     if (auto pl = GameManager::sharedState()->getPlayLayer())
+            //     {
+            //         if (auto player = pl->m_player1)
+            //         {
+            //             player->pushButton(PlayerButton::Jump);
+            //         }
+            //     }
+            // }
 
-            close(new_socket);
+            // TODO: Ishan
+            // We have two commands: "hold" and "release"
+            // They are only called when the state changes,
+            //      so if we receive "hold" we should hold the button
+            //      and if we receive "release" we should release the button
+
+            // TODO: Ishan
+            // Also we have a command "reset"
+            //     TODO: Reset at a certain time position (randomly chosen by gym env)
+
+            const char *response = "ok";
+            send(new_socket, response, strlen(response), 0);
+
+            // close(new_socket);
         }
     }
 
