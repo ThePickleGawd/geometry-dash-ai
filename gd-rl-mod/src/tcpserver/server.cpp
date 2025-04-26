@@ -52,12 +52,14 @@ namespace tcpserver
             // TODO: Ishan
             // We have two commands: "hold" and "release"
             // They are only called when the state changes,
-            //      so if we receive "hold" we should hold the button
-            //      and if we receive "release" we should release the button
+            // Just update the internal state, and use when we call .step
 
             // TODO: Ishan
             // Also we have a command "reset"
             //     TODO: Reset at a certain time position (randomly chosen by gym env)
+
+            // TODO: step
+            // Step the game based on our internal state
 
             const char *response = "ok";
             send(new_socket, response, strlen(response), 0);
