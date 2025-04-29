@@ -3,6 +3,7 @@
 #include <Geode/modify/PlayerObject.hpp>
 #include <Geode/modify/CCKeyboardDispatcher.hpp>
 #include "controls.hpp"
+#include <OpenGL/gl.h>
 #include "tcpserver/server.hpp"
 
 using namespace geode::prelude;
@@ -20,20 +21,18 @@ class $modify(RLPlayerObject, PlayerObject) {
 	}
 };
 
-class $modify(RLPlayLayer, PlayLayer) {
-	struct Fields {
-		bool frameStepMode = false;
-		bool waitingNextFrame = false;
-		int framesToStep = 0;
+class $modify(MyPlayLayer, PlayLayer)
+{
+	struct Fields
+	{
+		int frame_count = 0;
 	};
 
-
-
-	bool init(GJGameLevel* level, bool p1, bool p2) {
-		if (!PlayLayer::init(level, p1, p2))
-			return false;
+	bool init(GJGameLevel *level, bool p1, bool p2)
+	{
 		log::info("Level started");
-		return true;
+
+		return PlayLayer::init(level, p1, p2);
 	}
 
 	// void postUpdate(float dt) override {
@@ -47,6 +46,36 @@ class $modify(RLPlayLayer, PlayLayer) {
 			return;
 
 		log::info("player died at {} percent", (m_player1->getPositionX() / m_levelLength) * 100.0f);
+	}
+
+	void postUpdate(float p0)
+	{
+		PlayLayer::postUpdate(p0);
+
+		if (m_fields->frame_count % 15 == 0)
+		{
+			this->captureScreen();
+		}
+		m_fields->frame_count++;
+	}
+
+	void captureScreen()
+	{
+		// Get frame width and height
+		GLint viewport[4]; // { x, y, width, height}
+		glGetIntegerv(GL_VIEWPORT, viewport);
+		GLint width = viewport[2];
+		GLint height = viewport[3];
+
+		// Read buffer
+		unsigned char *buffer = new unsigned char[width * height * 4];
+		log::info("Capturing screen of size {}x{}", width, height);
+		glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+
+		// Send to AI Model via TCP
+		tcpserver::sendScreen(buffer, width, height);
+
+		delete[] buffer;
 	}
 };
 

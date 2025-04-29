@@ -3,6 +3,7 @@
 #include <thread>
 #include <string>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <unistd.h>
 #include "../controls.hpp"
 
@@ -10,7 +11,6 @@ using namespace geode::prelude;
 
 namespace tcpserver
 {
-
     void serverThreadFunction()
     {
         int server_fd, new_socket;
@@ -38,17 +38,6 @@ namespace tcpserver
 
             std::string command(buffer);
             log::info("Received command: {}", command);
-
-            // if (command.find("jump") != std::string::npos)
-            // {
-            //     if (auto pl = GameManager::sharedState()->getPlayLayer())
-            //     {
-            //         if (auto player = pl->m_player1)
-            //         {
-            //             player->pushButton(PlayerButton::Jump);
-            //         }
-            //     }
-            // }
 
 
             // TODO: Ishan
@@ -82,6 +71,44 @@ namespace tcpserver
     void start()
     {
         std::thread(serverThreadFunction).detach();
+    }
+
+    void sendScreen(unsigned char *buffer, int width, int height)
+    {
+        int sock = 0;
+        struct sockaddr_in serv_addr;
+
+        sock = socket(AF_INET, SOCK_STREAM, 0);
+        if (sock < 0)
+        {
+            log::error("Socket creation error");
+            return;
+        }
+
+        serv_addr.sin_family = AF_INET;
+        serv_addr.sin_port = htons(22223); // Use different port for sending screen data
+
+        if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0)
+        {
+            log::error("Invalid address / Address not supported");
+            return;
+        }
+
+        if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+        {
+            log::error("Connection Failed");
+            return;
+        }
+
+        // First, send width and height (so Python knows the size)
+        int meta[2] = {width, height};
+        send(sock, meta, sizeof(meta), 0);
+
+        // Then send pixel buffer
+        int imageSize = width * height * 4; // 4 bytes per pixel (RGBA)
+        send(sock, buffer, imageSize, 0);
+
+        close(sock);
     }
 
 }

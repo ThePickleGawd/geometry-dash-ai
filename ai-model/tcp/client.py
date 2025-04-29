@@ -1,9 +1,10 @@
 import socket
+import config
 
 class GDClient:
-    def __init__(self, host='127.0.0.1', port=22222):
-        self.host = host
-        self.port = port
+    def __init__(self):
+        self.host = config.BASE_URL
+        self.port = config.CLIENT_PORT
         self.sock = None
 
     def connect(self):
