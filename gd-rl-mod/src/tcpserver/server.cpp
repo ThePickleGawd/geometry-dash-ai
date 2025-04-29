@@ -4,6 +4,7 @@
 #include <string>
 #include <netinet/in.h>
 #include <unistd.h>
+#include "../controls.hpp"
 
 using namespace geode::prelude;
 
@@ -49,17 +50,27 @@ namespace tcpserver
             //     }
             // }
 
-            // TODO: Ishan
-            // We have two commands: "hold" and "release"
-            // They are only called when the state changes,
-            // Just update the internal state, and use when we call .step
 
             // TODO: Ishan
             // Also we have a command "reset"
             //     TODO: Reset at a certain time position (randomly chosen by gym env)
+            if (command.find("reset") != std::string::npos) {
+                controls::resetLevel();
+            }
 
             // TODO: step
             // Step the game based on our internal state
+            if (command.find("step") != std::string::npos) {
+                if (command.find("jump") != std::string::npos || command.find("hold") != std::string::npos) {
+                    // step one frame and send a jump input
+                    controls::step(1, true);
+                }
+                else if (command.find("release") != std::string::npos) {
+                    // step one frame and release jump
+                    controls::step(1, false);
+                }
+            }
+
 
             const char *response = "ok";
             send(new_socket, response, strlen(response), 0);
