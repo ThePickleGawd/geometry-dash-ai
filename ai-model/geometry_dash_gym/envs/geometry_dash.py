@@ -4,18 +4,18 @@ from gymnasium import spaces
 from enum import Enum
 import numpy as np
 
-from tcpclient import GDClient
+from tcp import GDClient
 
 class Actions(Enum):
     idle = 0
     hold = 1
 
 class GeometryDashEnv(gym.Env):
-    def __init__(self, host='127.0.0.1', port=22222):
+    def __init__(self):
         super(GeometryDashEnv, self).__init__()
 
         # Connect to GD mod
-        self.client = GDClient(host, port)
+        self.client = GDClient()
         self.client.connect()
 
         self.action_space = spaces.Discrete(2)

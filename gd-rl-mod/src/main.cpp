@@ -60,15 +60,18 @@ class $modify(MyPlayLayer, PlayLayer)
 
 	void captureScreen()
 	{
-		auto frameSize = CCDirector::sharedDirector()->getOpenGLView()->getFrameSize();
-		int width = frameSize.width;
-		int height = frameSize.height;
+		// Get frame width and height
+		GLint viewport[4]; // { x, y, width, height}
+		glGetIntegerv(GL_VIEWPORT, viewport);
+		GLint width = viewport[2];
+		GLint height = viewport[3];
 
+		// Read buffer
 		unsigned char *buffer = new unsigned char[width * height * 4];
 		log::info("Capturing screen of size {}x{}", width, height);
-
 		glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 
+		// Send to AI Model via TCP
 		tcpserver::sendScreen(buffer, width, height);
 
 		delete[] buffer;
