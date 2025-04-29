@@ -16,7 +16,6 @@ $on_mod(Loaded) {
 class $modify(RLPlayerObject, PlayerObject) {
 	bool pushButton(PlayerButton btn) {
 		log::info("Jump button received by player!");
-		// controls::freeze();
 		return PlayerObject::pushButton(btn);
 	}
 };
@@ -25,6 +24,8 @@ class $modify(MyPlayLayer, PlayLayer)
 {
 	struct Fields
 	{
+		bool frameStepMode = false;
+        int framesToStep = 0;
 		int frame_count = 0;
 	};
 
@@ -35,10 +36,6 @@ class $modify(MyPlayLayer, PlayLayer)
 		return PlayLayer::init(level, p1, p2);
 	}
 
-	// void postUpdate(float dt) override {
-	// 	PlayLayer::postUpdate(dt);
-	// }
-
 	void destroyPlayer(PlayerObject* player, GameObject* p1) override {
 		PlayLayer::destroyPlayer(player, p1);
 
@@ -48,15 +45,21 @@ class $modify(MyPlayLayer, PlayLayer)
 		log::info("player died at {} percent", (m_player1->getPositionX() / m_levelLength) * 100.0f);
 	}
 
-	void postUpdate(float p0)
-	{
-		PlayLayer::postUpdate(p0);
-
+	void postUpdate(float p0) override {
+		if (m_fields->frameStepMode) {
+			if (m_fields->framesToStep > 0) {
+				controls::unfreeze();
+			} else {
+				controls::freeze();
+			}
+			m_fields->framesToStep--;
+        }
 		if (m_fields->frame_count % 15 == 0)
 		{
 			this->captureScreen();
 		}
 		m_fields->frame_count++;
+		PlayLayer::postUpdate(p0);
 	}
 
 	void captureScreen()
@@ -81,13 +84,46 @@ class $modify(MyPlayLayer, PlayLayer)
 
 class $modify(RLCCKeyboardDispatcher, CCKeyboardDispatcher) {
 	bool dispatchKeyboardMSG(enumKeyCodes key, bool down, bool repeat) {
-		// if (down) {
-		// 	log::info("key pressed");
-		// 	if (key == cocos2d::KEY_O) {
-		// 		log::info("Pressed O: stepping 1 frame");
-		// 		controls::step(1);
-		// 	}
-		// }
+		if (down && key == cocos2d::KEY_O) {
+			log::info("Stepping...");
+
+			controls::step(5, false);
+
+			return true; // Key was handled
+		} else if (down && key == cocos2d::KEY_F) {
+			if (auto pl = PlayLayer::get()) {
+				pl->m_player1->m_isLocked = !pl->m_player1->m_isLocked;
+				if (!pl->m_player1->m_isLocked) {
+					if (auto mypl = as<MyPlayLayer*>(pl)) {
+						mypl->m_fields->frameStepMode = false;
+					}
+				}
+			}
+		}
+
+		// Let other keys go through
 		return CCKeyboardDispatcher::dispatchKeyboardMSG(key, down, repeat);
 	}
+
 };
+
+namespace controls {
+
+inline void step(int frames, bool press_jump) {
+    if (auto pl = PlayLayer::get()) {
+        if (auto mypl = as<MyPlayLayer*>(pl)) {
+            mypl->m_fields->frameStepMode = true;
+            mypl->m_fields->framesToStep = frames;
+
+            if (mypl->m_player1) {
+                if (press_jump) {
+					controls::unfreeze();
+                    mypl->m_player1->pushButton(PlayerButton::Jump);
+                }
+                mypl->m_player1->lockPlayer();
+            }
+        }
+    }
+}
+
+}

@@ -48,39 +48,7 @@ inline void unfreeze() {
     }
 }
 
-inline void step(int frames, bool jumping) {
-    // Freeze the game if not already frozen
-    freeze();
-
-
-    // if (auto pl = GameManager::sharedState()->getPlayLayer()) {
-    //     if (pl->m_player1 && pl->m_player1->m_isLocked) {
-    //         log::info("stepping");
-    //         pl->m_player1->m_isLocked = false; 
-    //         for (int i = 0; i < frames; i++) {
-    //             pl->updateTimeWarp(1.0f / 60.0f);
-    //             pl->postUpdate(1.0f / 60.0f);
-    //         }
-    //         pl->m_player1->lockPlayer();
-    //     }
-    // }
-
-
-    // Unfreeze game so the player can move forward
-    unfreeze();
-    // Jump in the game if a jump command is sent, and release if release command is sent
-    if (jumping) {
-        pressJump();
-    } else {
-        releaseJump();
-    }
-
-    // TODO: figure out logic for running one frame and freezing again
-
-    // std::this_thread::sleep_for(std::chrono::seconds(5));
-    // freeze();
-    // log::info("waited for 5 seconds");
-}
+void step(int frames, bool press_jump);
 
 
 } // namespace controls
