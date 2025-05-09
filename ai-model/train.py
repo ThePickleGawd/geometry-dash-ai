@@ -71,7 +71,7 @@ def train(num_episodes=1000, max_steps_per_episode=1000):
             total_reward += reward
 
             # Add to replay buffer
-            # agent.remember(frame, action, reward, )
+            agent.remember(frame, action, reward, )
             
             # Train
             agent.train()
