@@ -8,17 +8,17 @@ class DQNModel(nn.Module):
 
         self.conv = nn.Sequential(
             nn.Conv2d(in_channels, 32, kernel_size=8, stride=4),  # [32, 179, 318]
-            nn.ReLU(),
+            nn.SiLU(),
             nn.Conv2d(32, 64, kernel_size=4, stride=2),           # [64, 88, 158]
-            nn.ReLU(),
+            nn.SiLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=2),           # [64, 43, 78]
-            nn.ReLU(),
+            nn.SiLU(),
         )
 
         self.fc = nn.Sequential(
             nn.Flatten(),
             nn.LazyLinear(512),
-            nn.ReLU(),
+            nn.SiLU(),
             nn.Linear(512, num_actions)
         )
 

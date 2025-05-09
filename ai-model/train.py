@@ -1,20 +1,20 @@
 import numpy as np
-from geometry_dash_gym.envs import GeometryDashEnv
 import gymnasium as gym
 import subprocess
 import time
+import torch
+from torchvision.transforms import v2
 import cv2
 from threading import Thread
 import queue
+
+from geometry_dash_gym.envs import GeometryDashEnv
 from tcp.server import GDServer
 from model import DQNModel
-import torch
-from torchvision.transforms import v2
+from agent import Agent
 
 # Save last 5 frames
 frame_queue = queue.Queue(maxsize=5)  
-
-
 
 def start_geometry_dash():
     # Open geometry dash
@@ -42,11 +42,11 @@ def listen_for_frame_buffer():
 
     server.close()
 
-
 def train(num_episodes=1000, max_steps_per_episode=1000):
     # Model and Environment
     env = GeometryDashEnv()
     model = DQNModel()
+    agent = Agent(model)
 
     # Image transform
     transform = v2.Compose([
@@ -59,22 +59,22 @@ def train(num_episodes=1000, max_steps_per_episode=1000):
         total_reward = 0
 
         for step in range(max_steps_per_episode):
-            # Random action: 0 (nothing) or 1 (hold)
-            action = np.random.choice([0, 1])
-            
-            # Model decides basesd on screen frame
+            # Get game state (just the screen frame)
             frame = frame_queue.get()
-            input_tensor = transform(frame).unsqueeze(0)  # shape [1, C, H, W]
+            frame = transform(frame).unsqueeze(0)  # (1, C, H, W)
 
-            with torch.no_grad():
-                output = model(input_tensor)
+            # Get action
+            action = agent.act(state=frame)
 
-            action = torch.argmax(output, dim=1).item()
-            print(action)
-
+            # Do action
             obs, reward, done, info = env.step(action)
-
             total_reward += reward
+
+            # Add to replay buffer
+            # agent.remember(frame, action, reward, )
+            
+            # Train
+            agent.train()
 
             if done:
                 break

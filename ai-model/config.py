@@ -5,7 +5,6 @@ SERVER_PORT = 22223 # Receives frame buffer
 BASE_URL = "127.0.0.1"
 
 # Hyperparameters
-STATE_DIM = 84 * 84  # example flattened frame
 ACTION_DIM = 2       # jump / no jump
 
 LR = 1e-3
