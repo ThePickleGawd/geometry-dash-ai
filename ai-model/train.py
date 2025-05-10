@@ -59,7 +59,6 @@ def train(num_episodes=1000, max_steps_per_episode=1000):
             while frame_queue.empty():
                 time.sleep(0.01) # TODO: This is a super hacky way, so someone can clean this up
 
-
             # Get game state (just the screen frame)
             frame = frame_queue.get()
             frame = transform(frame).unsqueeze(0)  # (1, C, H, W)
@@ -68,10 +67,8 @@ def train(num_episodes=1000, max_steps_per_episode=1000):
             action = agent.act(state=frame)
 
             # Do action
-            print("going to step")
             obs, reward, done, info = env.step(action)
             total_reward += reward
-            print("done step")
 
             # Get new frame buffer
             with frame_queue.mutex:
@@ -79,7 +76,6 @@ def train(num_episodes=1000, max_steps_per_episode=1000):
             while frame_queue.empty():
                 time.sleep(0.01) # TODO: This is a super hacky way, so someone can clean this up
 
-            print("frame queue is fresh")
             frame_t1 = frame_queue.get()
             frame_t1 = transform(frame_t1).unsqueeze(0)
 
