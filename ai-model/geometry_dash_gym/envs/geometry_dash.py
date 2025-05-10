@@ -23,9 +23,7 @@ class GeometryDashEnv(gym.Env):
         self.holding = False
 
     def step(self, action):
-        print("sending step")    
-        gdclient.send_command(f"step" + " hold" if action==1 else "")
-        print("sent step")
+        gdclient.send_command("step" + (" hold" if action==1 else ""))
         observation = np.array([0.0])  # placeholder observation
         reward = 0.0
         done = False

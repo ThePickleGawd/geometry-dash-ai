@@ -81,7 +81,7 @@ def train(num_episodes=1000, max_steps_per_episode=1000):
 
             print("frame queue is fresh")
             frame_t1 = frame_queue.get()
-            frame = transform(frame).unsqueeze(0)
+            frame_t1 = transform(frame_t1).unsqueeze(0)
 
             # Add to replay buffer
             agent.remember(frame, action, reward, frame_t1, False) # TODO: If done, then set done to True

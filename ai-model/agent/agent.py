@@ -47,6 +47,9 @@ class Agent:
         batch = random.sample(self.replay_buffer, self.batch_size)
         states, actions, rewards, next_states, dones = zip(*batch)
 
+        for state in states:
+            print(state.shape)
+            
         states = torch.FloatTensor(states)
         actions = torch.LongTensor(actions).unsqueeze(1)
         rewards = torch.FloatTensor(rewards)
