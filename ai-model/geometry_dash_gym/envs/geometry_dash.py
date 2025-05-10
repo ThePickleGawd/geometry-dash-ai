@@ -23,15 +23,19 @@ class GeometryDashEnv(gym.Env):
         self.holding = False
 
     def step(self, action):
+        print("in step function")
         # Send action to the GD mod, only if it's different from the last one
         if action == 1 and not self.holding:
             gdclient.send_command("hold")
+            print("send hold")
             self.holding = True
         elif action == 0 and self.holding:
             gdclient.send_command("release")
+            print("send release")
             self.holding = False
 
         gdclient.send_command("step")
+        print("send step")
         observation = np.array([0.0])  # placeholder observation
         reward = 0.0
         done = False

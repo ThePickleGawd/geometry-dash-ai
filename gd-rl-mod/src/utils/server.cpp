@@ -55,7 +55,8 @@ namespace tcpserver
 
             if (command.find("reset") != std::string::npos)
             {
-                controls::resetLevel();
+                geode::queueInMainThread([]
+                                         { controls::resetLevel(); });
             }
 
             if (command.find("step") != std::string::npos)

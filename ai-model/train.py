@@ -19,8 +19,8 @@ frame_queue = queue.Queue(maxsize=5)
 def start_geometry_dash():
     # Open geometry dash
     subprocess.Popen(["geode", "run"])
-    print("Waiting 5 seconds for Geometry Dash to load...")
-    time.sleep(5)
+    print("Waiting 4 seconds for Geometry Dash to load...")
+    time.sleep(4)
 
 def listen_for_frame_buffer():
     while True:
@@ -40,7 +40,6 @@ def listen_for_frame_buffer():
     gdclient.close()
 
 def train(num_episodes=1000, max_steps_per_episode=1000):
-    print('calling train')
     # Model and Environment
     env = GeometryDashEnv()
     model = DQNModel()
@@ -57,7 +56,7 @@ def train(num_episodes=1000, max_steps_per_episode=1000):
         total_reward = 0
 
         for step in range(max_steps_per_episode):
-            while not frame_queue.full():
+            while frame_queue.empty():
                 time.sleep(0.01) # TODO: This is a super hacky way, so someone can clean this up
 
             # Get game state (just the screen frame)
@@ -68,15 +67,18 @@ def train(num_episodes=1000, max_steps_per_episode=1000):
             action = agent.act(state=frame)
 
             # Do action
+            print("going to step")
             obs, reward, done, info = env.step(action)
             total_reward += reward
+            print("done step")
 
             # Get new frame buffer
             with frame_queue.mutex:
                 frame_queue.queue.clear()
-            while not frame_queue.full():
+            while frame_queue.empty():
                 time.sleep(0.01) # TODO: This is a super hacky way, so someone can clean this up
 
+            print("frame queue is fresh")
             frame_t1 = frame_queue.get()
             frame = transform(frame).unsqueeze(0)
 
@@ -94,12 +96,8 @@ def train(num_episodes=1000, max_steps_per_episode=1000):
     env.close()
 
 if __name__ == "__main__":
-    # start_geometry_dash()
-    print("started")
+    start_geometry_dash()
     gdclient.connect()
-    print("connected")
     thread = Thread(target=listen_for_frame_buffer, daemon=True)
     thread.start()
-    print("thread start")
     train()
-    print("train start")
