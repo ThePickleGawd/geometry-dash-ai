@@ -19,8 +19,8 @@ frame_queue = queue.Queue(maxsize=5)
 def start_geometry_dash():
     # Open geometry dash
     subprocess.Popen(["geode", "run"])
-    print("Waiting 4 seconds for Geometry Dash to load...")
-    time.sleep(4)
+    print("Waiting 5 seconds for Geometry Dash to load...")
+    time.sleep(5)
 
 def listen_for_frame_buffer():
     while True:
@@ -58,6 +58,7 @@ def train(num_episodes=1000, max_steps_per_episode=1000):
         for step in range(max_steps_per_episode):
             while frame_queue.empty():
                 time.sleep(0.01) # TODO: This is a super hacky way, so someone can clean this up
+
 
             # Get game state (just the screen frame)
             frame = frame_queue.get()
