@@ -2,32 +2,50 @@
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/PlayerObject.hpp>
 #include <Geode/modify/CCKeyboardDispatcher.hpp>
+#include <Geode/modify/AppDelegate.hpp>
 #include "utils/controls.hpp"
 #include <OpenGL/gl.h>
 #include "utils/server.hpp"
 
 using namespace geode::prelude;
 
+// ============== Entry Point ==============
 $on_mod(Loaded)
 {
 	log::info("Mod loaded, let's setup tcp server");
 	tcpserver::start();
 }
 
-class $modify(RLPlayerObject, PlayerObject)
+// ============== Stop Game from Pausing ==============
+class $modify(AppDelegate)
 {
-	bool pushButton(PlayerButton btn)
+	void applicationWillResignActive()
 	{
-		log::info("Jump button received by player!");
-		return PlayerObject::pushButton(btn);
+		// Do nothing to avoid pausing
+	}
+
+	void applicationDidEnterBackground()
+	{
+		// Also override this to do nothing
 	}
 };
 
+// ============== Overload jump request ==============
+// class $modify(RLPlayerObject, PlayerObject)
+// {
+// 	bool pushButton(PlayerButton btn)
+// 	{
+// 		log::info("Jump button received by player!");
+// 		return PlayerObject::pushButton(btn);
+// 	}
+// };
+
+// ============== Main Game Loop ==============
 class $modify(MyPlayLayer, PlayLayer)
 {
 	struct Fields
 	{
-		bool frameStepMode = false;
+		bool frameStepMode = true;
 		int framesToStep = 0;
 		int frame_count = 0;
 	};
@@ -65,13 +83,13 @@ class $modify(MyPlayLayer, PlayLayer)
 		}
 		if (m_fields->frame_count % 15 == 0)
 		{
-			this->captureScreen();
+			this->sendFrameToPython();
 		}
 		m_fields->frame_count++;
 		PlayLayer::postUpdate(p0);
 	}
 
-	void captureScreen()
+	void sendFrameToPython()
 	{
 		// Get frame width and height
 		GLint viewport[4]; // { x, y, width, height}
@@ -85,12 +103,13 @@ class $modify(MyPlayLayer, PlayLayer)
 		glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 
 		// Send to AI Model via TCP
-		tcpserver::sendScreen(buffer, width, height);
+		tcpserver::sendFrame(buffer, width, height);
 
 		delete[] buffer;
 	}
 };
 
+// ============== Debugging w/ keyboard ==============
 class $modify(RLCCKeyboardDispatcher, CCKeyboardDispatcher)
 {
 	bool dispatchKeyboardMSG(enumKeyCodes key, bool down, bool repeat)
@@ -122,6 +141,8 @@ class $modify(RLCCKeyboardDispatcher, CCKeyboardDispatcher)
 		return CCKeyboardDispatcher::dispatchKeyboardMSG(key, down, repeat);
 	}
 };
+
+// ============== Step Function ==============
 
 // I kinda hate this, but it depends on MyPlayLayer so we need to put this function here
 namespace controls

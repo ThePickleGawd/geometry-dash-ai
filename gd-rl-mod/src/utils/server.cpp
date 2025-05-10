@@ -13,21 +13,7 @@ namespace tcpserver
 {
     int frameSocket = -1;
 
-    // Placeholder: replace with real OpenGL screen capture
-    unsigned char *capture_screen(int &width, int &height)
-    {
-        width = 320;  // replace with actual width
-        height = 240; // replace with actual height
-        int imageSize = width * height * 4;
-        unsigned char *buffer = new unsigned char[imageSize];
-
-        // Fill buffer with screen pixel data
-        // glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-
-        return buffer;
-    }
-
-    void sendScreen(unsigned char *buffer, int width, int height)
+    void sendFrame(unsigned char *buffer, int width, int height)
     {
         if (frameSocket < 0)
             return;
@@ -76,14 +62,6 @@ namespace tcpserver
             {
                 bool press = command.find("jump") != std::string::npos || command.find("hold") != std::string::npos;
                 controls::step(1, press);
-
-                int width, height;
-                unsigned char *screenBuffer = capture_screen(width, height);
-                if (screenBuffer)
-                {
-                    sendScreen(screenBuffer, width, height);
-                    delete[] screenBuffer;
-                }
             }
 
             const char *response = "ok";

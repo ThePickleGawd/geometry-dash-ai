@@ -1,1 +1,1 @@
-from tcp.client import GDClient
+from tcp.client import gdclient

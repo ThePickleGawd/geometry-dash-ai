@@ -9,7 +9,7 @@ from threading import Thread
 import queue
 
 from geometry_dash_gym.envs import GeometryDashEnv
-from tcp.server import GDServer
+from tcp import gdclient
 from model import DQNModel
 from agent import Agent
 
@@ -23,11 +23,8 @@ def start_geometry_dash():
     time.sleep(5)
 
 def listen_for_frame_buffer():
-    server = GDServer()
-    server.start()
-
     while True:
-        frame = server.receive_frame()
+        frame = gdclient.receive_frame()
         if frame is None:
             print("Connection lost")
             break
@@ -40,9 +37,10 @@ def listen_for_frame_buffer():
             frame_queue.get_nowait() # Remove oldest frame
         frame_queue.put(tensor)
 
-    server.close()
+    gdclient.close()
 
 def train(num_episodes=1000, max_steps_per_episode=1000):
+    print('calling train')
     # Model and Environment
     env = GeometryDashEnv()
     model = DQNModel()
@@ -59,6 +57,9 @@ def train(num_episodes=1000, max_steps_per_episode=1000):
         total_reward = 0
 
         for step in range(max_steps_per_episode):
+            while not frame_queue.full():
+                time.sleep(0.01) # TODO: This is a super hacky way, so someone can clean this up
+
             # Get game state (just the screen frame)
             frame = frame_queue.get()
             frame = transform(frame).unsqueeze(0)  # (1, C, H, W)
@@ -70,9 +71,18 @@ def train(num_episodes=1000, max_steps_per_episode=1000):
             obs, reward, done, info = env.step(action)
             total_reward += reward
 
+            # Get new frame buffer
+            with frame_queue.mutex:
+                frame_queue.queue.clear()
+            while not frame_queue.full():
+                time.sleep(0.01) # TODO: This is a super hacky way, so someone can clean this up
+
+            frame_t1 = frame_queue.get()
+            frame = transform(frame).unsqueeze(0)
+
             # Add to replay buffer
-            agent.remember(frame, action, reward, )
-            
+            agent.remember(frame, action, reward, frame_t1, False) # TODO: If done, then set done to True
+
             # Train
             agent.train()
 
@@ -84,7 +94,12 @@ def train(num_episodes=1000, max_steps_per_episode=1000):
     env.close()
 
 if __name__ == "__main__":
-    start_geometry_dash()
+    # start_geometry_dash()
+    print("started")
+    gdclient.connect()
+    print("connected")
     thread = Thread(target=listen_for_frame_buffer, daemon=True)
     thread.start()
+    print("thread start")
     train()
+    print("train start")
