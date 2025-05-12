@@ -1,10 +1,13 @@
 #include "server.hpp"
 #include <Geode/Geode.hpp>
+#include <Geode/modify/PlayLayer.hpp>
+#include <Geode/modify/AppDelegate.hpp>
 #include <thread>
 #include <string>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <string>
 #include "controls.hpp"
 
 using namespace geode::prelude;
@@ -53,6 +56,14 @@ namespace tcpserver
             std::string command(buffer);
             log::info("Received command: {}", command);
 
+            PlayLayer *pl = PlayLayer::get();
+            if (!pl || !pl->m_player1)
+            {
+                std::string errorResponse = R"({"error": "Game not running or not initialized"})";
+                send(new_socket, errorResponse.c_str(), errorResponse.size(), 0);
+                continue;
+            }
+
             if (command.find("reset") != std::string::npos)
             {
                 geode::queueInMainThread([]
@@ -65,10 +76,12 @@ namespace tcpserver
                 controls::step(5, press);
             }
 
-            // TODO: Ishan can you make this send info like level %, whether we died this frame, etc?
-            // Do it in JSON or some other format, up to you. We just need to parse it once we receive in Python
-            const char *response = "ok";
-            send(new_socket, response, strlen(response), 0);
+            bool died = pl->m_player1->m_isDead;
+            float percent = (pl->m_player1->getPositionX() / pl->m_levelLength) * 100.0f;
+
+            std::string response = fmt::format(R"({{"dead": {}, "percent": {}}})", died ? "true" : "false", percent);
+            log::info("{}", response);
+            send(new_socket, response.c_str(), response.size(), 0);
         }
     }
 

@@ -1,7 +1,11 @@
 # See README for more details
+
+# Model
+FRAME_STACK_SIZE = 4 # How many frames to stack in state, sent to model
+
+# TCP Client
 COMMAND_PORT = 22222 # Sends commands like "step, restart"
 FRAME_PORT = 22223 # Receives frame buffer
-
 BASE_URL = "127.0.0.1"
 
 # Train settings

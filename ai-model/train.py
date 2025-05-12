@@ -16,8 +16,8 @@ from model import DQNModel
 from agent import Agent
 import config
 
-# Save last 5 frames
-frame_queue = queue.Queue(maxsize=5)  
+# Save last few frames
+frame_queue = queue.Queue(maxsize=config.FRAME_STACK_SIZE)
 os.makedirs("checkpoints", exist_ok=True)
 
 def start_geometry_dash():
@@ -40,8 +40,35 @@ def listen_for_frame_buffer():
         if frame_queue.full():
             frame_queue.get_nowait() # Remove oldest frame
         frame_queue.put(tensor)
+        print("YO FRAME!")
 
     gdclient.close()
+
+# Thread safe; will clear queue after fetching
+def get_stacked_frames(frame_queue, transform, stack_size):
+    """
+    Waits until `stack_size` frames are in the queue, then grabs the latest ones,
+    applies `transform`, and returns a tensor of shape [1, stack_size, C, H, W].
+    """
+    while frame_queue.qsize() < stack_size:
+        time.sleep(0.01)
+
+    # Drain the queue safely
+    frames = []
+    while not frame_queue.empty():
+        try:
+            frames.append(frame_queue.get_nowait())
+        except queue.Empty:
+            break
+
+    # Use the last `stack_size` frames
+    frames = frames[-stack_size:]
+
+    # Transform and stack
+    processed = [transform(f).unsqueeze(0) for f in frames]  # [1, C, H, W] each
+    stacked = torch.cat(processed, dim=0).unsqueeze(0)       # [1, T, C, H, W]
+    return stacked
+
 
 def train(num_episodes=1000, max_steps_per_episode=1000, resume=False):
     os.makedirs("checkpoints", exist_ok=True)
@@ -72,29 +99,25 @@ def train(num_episodes=1000, max_steps_per_episode=1000, resume=False):
     ])
 
     for episode in range(start_episode, num_episodes):
-        obs = env.reset()
+        if episode > start_episode:
+            obs = env.reset()
+            
         total_reward = 0
 
         for step in tqdm(range(max_steps_per_episode)):
-            while frame_queue.empty():
-                time.sleep(0.01)
+            # Await get state and action
+            state_t0 = get_stacked_frames(frame_queue, transform, config.FRAME_STACK_SIZE)
+            action = agent.act(state=state_t0)
 
-            frame = frame_queue.get()
-            frame = transform(frame).unsqueeze(0)
-
-            action = agent.act(state=frame)
+            # Step
             _, reward, done, info = env.step(action)
             total_reward += reward
 
-            with frame_queue.mutex:
-                frame_queue.queue.clear()
-            while frame_queue.empty():
-                time.sleep(0.01)
+            # Get newly observed state
+            state_t1 = get_stacked_frames(frame_queue, transform, config.FRAME_STACK_SIZE) 
 
-            frame_t1 = frame_queue.get()
-            frame_t1 = transform(frame_t1).unsqueeze(0)
-
-            agent.remember(frame, action, reward, frame_t1, done)
+            # Remember and train
+            agent.remember(state_t0, action, reward, state_t1, done)
             agent.train()
 
             if done:

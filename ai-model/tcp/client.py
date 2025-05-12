@@ -3,6 +3,7 @@ import struct
 import numpy as np
 import cv2
 import config
+import json
 
 class GDClient:
     def __init__(self):
@@ -28,9 +29,10 @@ class GDClient:
             raise Exception("Not connected to command server")
         self.cmd_sock.sendall(command.encode())
 
-        response = self.cmd_sock.recv(1024)
-        # print(f"Server response: {response.decode()}")
-        return response
+        response = self.cmd_sock.recv(1024).decode()
+        data = json.loads(response)
+
+        return data
 
     def receive_frame(self):
         if not self.frame_sock:

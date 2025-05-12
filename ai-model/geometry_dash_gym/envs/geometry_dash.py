@@ -23,19 +23,25 @@ class GeometryDashEnv(gym.Env):
         self.holding = False
 
     def step(self, action):
-        res = gdclient.send_command("step" + (" hold" if action==1 else ""))
+        info = gdclient.send_command("step" + (" hold" if action==1 else ""))
+
+        if "error" in info and info["error"] != "":
+            print(f"Error: {info["error"]}")
+            return None, None, None, None
+
+        done = info["dead"]
         observation = None # Observation handled by tcp client
         reward = 0.0
-        done = False
-        info = {}
+        print(info)
 
         return observation, reward, done, info
 
     def reset(self):
         # Reset the level
-        gdclient.send_command("reset")
+        info = gdclient.send_command("reset")
+        print(info)
 
-        observation = np.array([0.0])
+        observation = None # Dummy
         return observation
 
     def close(self):
