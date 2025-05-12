@@ -48,29 +48,22 @@ def listen_for_frame_buffer():
 
 def build_state(transform):
     """Block until we have FRAME_STACK_SIZE frames, then stack them."""
-    print(f"[build_state] Filling frame_buffer: current size = {len(frame_buffer)}")
 
     while len(frame_buffer) < config.FRAME_STACK_SIZE:
         try:
-            print("[build_state] Waiting for initial frame from frame_queue...")
             f = frame_queue.get(timeout=1.0)
-            print("[build_state] Got initial frame")
         except queue.Empty:
             raise RuntimeError("[build_state] Timed out waiting for initial frames")
         frame_buffer.append(f)
 
     try:
-        print("[build_state] Waiting for one more frame from frame_queue...")
         new = frame_queue.get(timeout=1.0)
-        print("[build_state] Got extra frame")
         frame_buffer.append(new)
     except queue.Empty:
         raise RuntimeError("[build_state] Timed out waiting for next frame")
 
-    print("[build_state] Transforming and stacking frames")
     processed = [transform(f).unsqueeze(0) for f in frame_buffer]
     stacked = torch.cat(processed, dim=0).unsqueeze(0)
-    print("[build_state] Done")
     return stacked
 
 def train(num_episodes=1000, max_steps=1000, resume=False):
@@ -98,37 +91,28 @@ def train(num_episodes=1000, max_steps=1000, resume=False):
 
     for ep in range(start_ep, num_episodes):
         env.reset()
-
-        info = gdclient.send_command("step")
-        info = gdclient.send_command("step")
-        info = gdclient.send_command("step")
-        info = gdclient.send_command("step")
         total_r = 0
 
-        # initial fill of buffer
+        # Init state
         state = build_state(transform)
 
         for step in tqdm(range(max_steps), desc=f"Ep{ep+1}"):
-            print(f"[train] Step {step} — Acting")
+            # Get predicted action
             action = agent.act(state)
 
-            print(f"[train] Step {step} — Stepping env with action {action}")
+            # Simulate
             _, reward, done, _ = env.step(action)
             total_r += reward
 
-            print(f"[train] Step {step} — Building next state")
+            # Get resutling state and train
             next_state = build_state(transform)
-
-            print(f"[train] Step {step} — Remembering experience")
             agent.remember(state, action, reward, next_state, done)
-
-            print(f"[train] Step {step} — Training agent")
             agent.train()
 
             state = next_state
 
             if done:
-                print(f"[train] Step {step} — Episode done")
+                print(f"Died at step {step}. New Episode")
                 break
 
 
