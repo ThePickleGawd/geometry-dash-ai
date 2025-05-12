@@ -40,7 +40,7 @@ def listen_for_frame_buffer():
             if frame_queue.full():
                 _ = frame_queue.get_nowait()
             frame_queue.put(tensor)
-
+            
     except Exception as e:
         print("Frame listener error:", e)
     finally:
@@ -48,23 +48,30 @@ def listen_for_frame_buffer():
 
 def build_state(transform):
     """Block until we have FRAME_STACK_SIZE frames, then stack them."""
+    print(f"[build_state] Filling frame_buffer: current size = {len(frame_buffer)}")
+
     while len(frame_buffer) < config.FRAME_STACK_SIZE:
         try:
+            print("[build_state] Waiting for initial frame from frame_queue...")
             f = frame_queue.get(timeout=1.0)
+            print("[build_state] Got initial frame")
         except queue.Empty:
-            raise RuntimeError("Timed out waiting for initial frames")
+            raise RuntimeError("[build_state] Timed out waiting for initial frames")
         frame_buffer.append(f)
 
-    # for new states, just pull one more frame:
     try:
+        print("[build_state] Waiting for one more frame from frame_queue...")
         new = frame_queue.get(timeout=1.0)
+        print("[build_state] Got extra frame")
         frame_buffer.append(new)
     except queue.Empty:
-        raise RuntimeError("Timed out waiting for next frame")
+        raise RuntimeError("[build_state] Timed out waiting for next frame")
 
+    print("[build_state] Transforming and stacking frames")
     processed = [transform(f).unsqueeze(0) for f in frame_buffer]
-    # -> [T, C, H, W], then add batch dim -> [1, T, C, H, W]
-    return torch.cat(processed, dim=0).unsqueeze(0)
+    stacked = torch.cat(processed, dim=0).unsqueeze(0)
+    print("[build_state] Done")
+    return stacked
 
 def train(num_episodes=1000, max_steps=1000, resume=False):
     env   = GeometryDashEnv()
@@ -86,28 +93,44 @@ def train(num_episodes=1000, max_steps=1000, resume=False):
     ])
 
     # TODO: Fix waiting hack
-    print("Start the level! You have 3 seconds before training starts")
-    time.sleep(3)
+    print("Start the level! You have 5 seconds before training starts")
+    time.sleep(5)
 
     for ep in range(start_ep, num_episodes):
         env.reset()
+
+        info = gdclient.send_command("step")
+        info = gdclient.send_command("step")
+        info = gdclient.send_command("step")
+        info = gdclient.send_command("step")
         total_r = 0
 
         # initial fill of buffer
         state = build_state(transform)
 
         for step in tqdm(range(max_steps), desc=f"Ep{ep+1}"):
+            print(f"[train] Step {step} — Acting")
             action = agent.act(state)
+
+            print(f"[train] Step {step} — Stepping env with action {action}")
             _, reward, done, _ = env.step(action)
             total_r += reward
 
+            print(f"[train] Step {step} — Building next state")
             next_state = build_state(transform)
+
+            print(f"[train] Step {step} — Remembering experience")
             agent.remember(state, action, reward, next_state, done)
+
+            print(f"[train] Step {step} — Training agent")
             agent.train()
 
             state = next_state
+
             if done:
+                print(f"[train] Step {step} — Episode done")
                 break
+
 
         print(f"Ep {ep+1} → reward {total_r:.1f}")
 
@@ -122,7 +145,7 @@ def train(num_episodes=1000, max_steps=1000, resume=False):
     env.close()
 
 if __name__ == "__main__":
-    # start_geometry_dash()
+    start_geometry_dash()
     gdclient.connect()
     Thread(target=listen_for_frame_buffer, daemon=True).start()
     train()

@@ -23,9 +23,10 @@ class GeometryDashEnv(gym.Env):
         self.holding = False
 
     def step(self, action):
+        print("sending command")
         info = gdclient.send_command("step" + (" hold" if action==1 else ""))
-
-        if "error" in info and info["error"] != "":
+        print("done send")
+        if "error" in info:
             print(f"Error: {info["error"]}")
             return None, None, None, None
 
@@ -39,6 +40,7 @@ class GeometryDashEnv(gym.Env):
     def reset(self):
         # Reset the level
         info = gdclient.send_command("reset")
+        print("done reset")
         print(info)
 
         observation = None # Dummy
