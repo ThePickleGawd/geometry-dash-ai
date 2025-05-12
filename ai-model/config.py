@@ -4,6 +4,9 @@ FRAME_PORT = 22223 # Receives frame buffer
 
 BASE_URL = "127.0.0.1"
 
+# Train settings
+SAVE_EPOCH = 1
+
 # Hyperparameters
 ACTION_DIM = 2       # jump / no jump
 

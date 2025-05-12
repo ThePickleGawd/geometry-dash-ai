@@ -62,9 +62,11 @@ namespace tcpserver
             if (command.find("step") != std::string::npos)
             {
                 bool press = command.find("jump") != std::string::npos || command.find("hold") != std::string::npos;
-                controls::step(1, press);
+                controls::step(5, press);
             }
 
+            // TODO: Ishan can you make this send info like level %, whether we died this frame, etc?
+            // Do it in JSON or some other format, up to you. We just need to parse it once we receive in Python
             const char *response = "ok";
             send(new_socket, response, strlen(response), 0);
         }

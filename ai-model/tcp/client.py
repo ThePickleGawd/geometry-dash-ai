@@ -29,7 +29,8 @@ class GDClient:
         self.cmd_sock.sendall(command.encode())
 
         response = self.cmd_sock.recv(1024)
-        print(f"Server response: {response.decode()}")
+        # print(f"Server response: {response.decode()}")
+        return response
 
     def receive_frame(self):
         if not self.frame_sock:
