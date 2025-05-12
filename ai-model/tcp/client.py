@@ -8,8 +8,8 @@ import json
 class GDClient:
     def __init__(self):
         self.host = config.BASE_URL
-        self.cmd_port = config.COMMAND_PORT      # for commands
-        self.frame_port = config.FRAME_PORT     # new port for frames
+        self.cmd_port = config.COMMAND_PORT
+        self.frame_port = config.FRAME_PORT
         self.cmd_sock = None
         self.frame_sock = None
 
