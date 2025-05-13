@@ -50,38 +50,52 @@ namespace tcpserver
         while (true)
         {
             new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
-            char buffer[1024] = {0};
-            read(new_socket, buffer, 1024);
+            log::info("Command client connected.");
 
-            std::string command(buffer);
-            log::info("Received command: {}", command);
+            char buffer[1024];
 
-            PlayLayer *pl = PlayLayer::get();
-            if (!pl || !pl->m_player1)
+            while (true)
             {
-                std::string errorResponse = R"({"error": "Game not running or not initialized"})";
-                send(new_socket, errorResponse.c_str(), errorResponse.size(), 0);
-                continue;
+                memset(buffer, 0, sizeof(buffer));
+                int bytesRead = read(new_socket, buffer, sizeof(buffer));
+
+                if (bytesRead <= 0)
+                {
+                    log::info("Client disconnected or error.");
+                    close(new_socket);
+                    break;
+                }
+
+                std::string command(buffer);
+                log::info("Received command: {}", command);
+
+                PlayLayer *pl = PlayLayer::get();
+                if (!pl || !pl->m_player1)
+                {
+                    std::string errorResponse = R"({"error": "Game not running or not initialized"})";
+                    send(new_socket, errorResponse.c_str(), errorResponse.size(), 0);
+                    continue;
+                }
+
+                if (command.find("reset") != std::string::npos)
+                {
+                    geode::queueInMainThread([]
+                                             { controls::resetLevel(); });
+                }
+
+                if (command.find("step") != std::string::npos)
+                {
+                    bool press = command.find("jump") != std::string::npos || command.find("hold") != std::string::npos;
+                    controls::step(4, press);
+                }
+
+                bool died = pl->m_player1->m_isDead;
+                float percent = (pl->m_player1->getPositionX() / pl->m_levelLength) * 100.0f;
+                std::string response = fmt::format(R"({{"dead": {}, "percent": {}}})", died ? "true" : "false", percent);
+
+                log::info("Sending response: {}", response);
+                send(new_socket, response.c_str(), response.size(), 0);
             }
-
-            if (command.find("reset") != std::string::npos)
-            {
-                geode::queueInMainThread([]
-                                         { controls::resetLevel(); });
-            }
-
-            if (command.find("step") != std::string::npos)
-            {
-                bool press = command.find("jump") != std::string::npos || command.find("hold") != std::string::npos;
-                controls::step(5, press);
-            }
-
-            bool died = pl->m_player1->m_isDead;
-            float percent = (pl->m_player1->getPositionX() / pl->m_levelLength) * 100.0f;
-
-            std::string response = fmt::format(R"({{"dead": {}, "percent": {}}})", died ? "true" : "false", percent);
-            log::info("{}", response);
-            send(new_socket, response.c_str(), response.size(), 0);
         }
     }
 
