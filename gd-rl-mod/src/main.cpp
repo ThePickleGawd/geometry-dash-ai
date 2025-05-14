@@ -48,7 +48,6 @@ class $modify(MyPlayLayer, PlayLayer)
 		bool frameStepMode = true;
 		int framesToStep = 0;
 		int frame_count = 0;
-		bool placedCheckpoints = false;
 	};
 
 	bool init(GJGameLevel *level, bool p1, bool p2)
@@ -87,34 +86,6 @@ class $modify(MyPlayLayer, PlayLayer)
 			this->sendFrameToPython();
 		}
 		m_fields->frame_count++;
-		if (!m_fields->placedCheckpoints && m_player1 && m_checkpointArray) {
-            float totalLength = m_levelLength;
-            float originalX = m_player1->getPositionX();
-            float originalY = m_player1->getPositionY();
-
-            log::info("Placing premade checkpoints every 2%...");
-
-            for (int i = 2; i < 100; i += 2) { // Skip 0% and 100%
-                float targetX = (i / 100.0f) * m_levelLength;
-				float offsetY = 5.0f * sin(i); // small variation
-
-				// TODO: make sure all checkpoints are saved at safe y positions
-
-				m_player1->setPositionX(targetX);
-				m_player1->setPositionY(originalY + offsetY); // unique position
-
-				auto checkpoint = this->createCheckpoint();
-				this->storeCheckpoint(checkpoint);
-            }
-
-            // Restore player position
-            m_player1->setPositionX(originalX);
-            m_player1->setPositionY(originalY);
-
-			m_fields->placedCheckpoints = true;
-
-            log::info("Placed {} checkpoints.", m_checkpointArray->count());
-        }
 		PlayLayer::postUpdate(p0);
 	}
 
@@ -167,18 +138,7 @@ class $modify(RLCCKeyboardDispatcher, CCKeyboardDispatcher)
 		}
 		else if (down && key == cocos2d::KEY_P)
 		{
-			if (auto pl = PlayLayer::get())
-			{
-				auto checkpoints = pl->m_checkpointArray;
-				if (checkpoints && checkpoints->count() > 20)
-				{
-					int index = 1;
-					auto checkpoint = static_cast<CheckpointObject*>(checkpoints->objectAtIndex(index));
-					pl->m_currentCheckpoint = checkpoint;
-					pl->loadFromCheckpoint(checkpoint);
-					pl->destroyPlayer(pl->m_player1, nullptr); // triggers checkpoint respawn
-				}
-			}
+			controls::loadFromPercent(70);
 		}
 
 		// Let other keys go through
