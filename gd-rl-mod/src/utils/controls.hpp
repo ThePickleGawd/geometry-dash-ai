@@ -12,6 +12,7 @@ namespace controls
     void loadFromPercent(int percent);
     void freeze();
     void unfreeze();
+    bool isDead();
     void step(int frames, bool press_jump); // Defined in main.cpp :(
 
 } // namespace controls

@@ -5,7 +5,9 @@
 #include <Geode/modify/AppDelegate.hpp>
 #include "utils/controls.hpp"
 #include <OpenGL/gl.h>
+#include <cstdlib>
 #include "utils/server.hpp"
+#include "utils/safe_states.hpp"
 
 using namespace geode::prelude;
 
@@ -48,6 +50,8 @@ class $modify(MyPlayLayer, PlayLayer)
 		bool frameStepMode = true;
 		int framesToStep = 0;
 		int frame_count = 0;
+		bool saveStates = false; // determines whether to save game states for checkpoint loading
+		bool loadStates = true; // determines whether to load game states into map
 	};
 
 	bool init(GJGameLevel *level, bool p1, bool p2)
@@ -86,6 +90,35 @@ class $modify(MyPlayLayer, PlayLayer)
 			this->sendFrameToPython();
 		}
 		m_fields->frame_count++;
+		if (m_isPracticeMode && m_player1 && m_fields->saveStates) {
+			float percent = (m_player1->getPositionX() / m_levelLength) * 100.0f;
+			int int_percent = static_cast<int>(percent);
+
+			float currentY = m_player1->getPositionY();
+			int gamemode = static_cast<int>(m_player1->m_savedObjectType);
+			float rotation = m_player1->getRotation();
+			float yVel = m_player1->m_yVelocity;
+
+			auto it = g_safeStateMap.find(int_percent);
+			if ((it == g_safeStateMap.end() || currentY < it->second.y) && std::abs(int_percent - percent) < 0.05) {
+				g_safeStateMap[int_percent] = { currentY, gamemode, rotation, yVel };
+			}
+
+			// Save periodically or at 100%
+			if (int_percent == 100 || m_fields->frame_count % 300 == 0) {
+				saveSafeStatesToFile(g_safeStateMap);
+			}
+		} else if (!m_fields->saveStates && m_fields->loadStates) {
+			loadSafeStatesFromFile("safe_states/stereo_madness_states.txt"); // i'm assuming we are just sticking to the first level
+			m_fields->loadStates = false;
+		}
+
+		if (controls::isDead()) {
+			log::info("player is dead");
+		} else {
+			log::info("player is alive");
+		}
+
 		PlayLayer::postUpdate(p0);
 	}
 
@@ -138,7 +171,7 @@ class $modify(RLCCKeyboardDispatcher, CCKeyboardDispatcher)
 		}
 		else if (down && key == cocos2d::KEY_P)
 		{
-			controls::loadFromPercent(70);
+			controls::loadFromPercent(80);
 		}
 
 		// Let other keys go through

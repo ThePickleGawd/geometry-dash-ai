@@ -15,6 +15,7 @@ add_library(${PROJECT_NAME} SHARED
     src/main.cpp
     src/utils/server.cpp
     src/utils/controls.cpp
+    src/utils/safe_states.cpp
 )
 
 if (NOT DEFINED ENV{GEODE_SDK})

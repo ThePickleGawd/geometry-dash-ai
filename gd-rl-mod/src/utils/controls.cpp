@@ -2,7 +2,7 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/PlayerObject.hpp>
-#include <iostream>
+#include "safe_states.hpp"
 
 using namespace geode::prelude;
 
@@ -20,25 +20,31 @@ namespace controls
     }
 
     void loadFromPercent(int percent) {
-        // TODO: handle correct y positions and game modes (eg: whether to be in cube or ship mode)
+
         if (auto pl = GameManager::sharedState()->getPlayLayer()) {
             auto checkpoints = pl->m_checkpointArray;
             if (!checkpoints) return;
             float targetX = (percent / 100.0f) * pl->m_levelLength;
-            pl->m_player1->setPositionX(targetX);
+
+            SafeState state = {105.0f, 0, 0.0f, 0.0f}; // fallback
+            if (g_safeStateMap.contains(percent)) {
+                state = g_safeStateMap[percent];
+            }
+
+            auto player = pl->m_player1;
+            player->setPosition({targetX, state.y});
+            player->setRotation(state.rotation);
+            player->m_savedObjectType = static_cast<GameObjectType>(state.gamemode);
+            player->m_yVelocity = state.yVelocity;
 
             auto checkpoint = pl->createCheckpoint();
             pl->storeCheckpoint(checkpoint);
-
             pl->m_currentCheckpoint = checkpoint;
 
             pl->loadFromCheckpoint(checkpoint);
-            pl->m_player1->loadFromCheckpoint(checkpoint->m_player1Checkpoint);
+            player->loadFromCheckpoint(checkpoint->m_player1Checkpoint);
 
-            // doesn't correctly respawn while frozen for some reason
-            controls::unfreeze();
-
-            pl->destroyPlayer(pl->m_player1, nullptr);
+            pl->destroyPlayer(player, nullptr);
         }
     }
 
@@ -83,4 +89,12 @@ namespace controls
             }
         }
     }
+
+    bool isDead() {
+        if (auto pl = GameManager::sharedState()->getPlayLayer()) {
+            return pl->m_player1 && pl->m_player1->m_isDead;
+        }
+        return false;
+    }
+
 } // namespace controls
