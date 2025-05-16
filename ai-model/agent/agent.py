@@ -44,9 +44,7 @@ class Agent:
         self.replay_buffer.append((state, action, reward, next_state, done))
 
     def train(self):
-        print("Agent Training")
         if len(self.replay_buffer) < self.batch_size:
-            print("too small buffer :(")
             return
 
         batch = random.sample(self.replay_buffer, self.batch_size)

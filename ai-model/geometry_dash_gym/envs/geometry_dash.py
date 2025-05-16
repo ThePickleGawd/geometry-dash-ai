@@ -42,8 +42,6 @@ class GeometryDashEnv(gym.Env):
     def reset(self):
         # Reset the level
         info = gdclient.send_command("reset")
-        print("done reset")
-        print(info)
 
         observation = None # Dummy
         return observation

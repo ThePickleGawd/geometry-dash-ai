@@ -94,7 +94,6 @@ def train(num_episodes=100, max_steps=10000, resume=False):
 
     for ep in range(start_ep, num_episodes):
         #Spawn in randomly NEED TO BE IMPLEMENTED
-        print("NEW RUN")
         env.reset()
         total_r = 0
 
@@ -114,7 +113,7 @@ def train(num_episodes=100, max_steps=10000, resume=False):
             # Get resutling state and train
             next_state = build_state(transform)
             agent.remember(state, action, reward, next_state, done)
-            # agent.train()
+            agent.train()
 
             state = next_state
             if info['percent']>best_percent:
