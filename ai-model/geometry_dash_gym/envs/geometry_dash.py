@@ -23,9 +23,7 @@ class GeometryDashEnv(gym.Env):
         self.holding = False
 
     def step(self, action):
-        print("sending command")
         info = gdclient.send_command("step" + (" hold" if action==1 else ""))
-        print("done send")
         if "error" in info:
             print(f"Error: {info["error"]}")
             return None, None, None, None
@@ -33,7 +31,6 @@ class GeometryDashEnv(gym.Env):
         done = info["dead"]
         observation = None # Observation handled by tcp client
         reward = 0.0
-        print(info)
 
         return observation, reward, done, info
 
