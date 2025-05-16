@@ -101,14 +101,15 @@ def train(num_episodes=100, max_steps=10000, resume=False):
         # Init state
         state = build_state(transform)
 
-        for step in tqdm(range(max_steps), desc=f"Ep{ep+1}"):
+        pbar = tqdm(range(max_steps), desc=f"Ep{ep+1}")
+        for step in pbar:
             # Get predicted action
             action = agent.act(state)
 
             # Simulate
             _, reward, done, info = env.step(action)
             total_r += reward
-            print("total reward:",total_r)
+            pbar.set_postfix(r=round(total_r, 2), lvl_percent=round(info["percent"], 1))
 
             # Get resutling state and train
             next_state = build_state(transform)

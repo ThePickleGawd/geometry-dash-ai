@@ -24,7 +24,6 @@ class GeometryDashEnv(gym.Env):
         self.prePercent = 0
 
     def step(self, action):
-        print("sending command")
         # INFO contains if dead and the percentage
         info = gdclient.send_command("step" + (" hold" if action==1 else ""))
         if "error" in info:
@@ -35,12 +34,8 @@ class GeometryDashEnv(gym.Env):
         observation = None # Observation handled by tcp client
         reward = -1.0
 
-        if info['percent'] < self.prePercent or done:
-            print('DEATHHHHHHHHHHHHH i think')
-            reward-=1000
-            done = True
-        self.prePercent = info['percent']
-
+        if done:
+            reward = -1000
 
         return observation, reward, done, info
 
