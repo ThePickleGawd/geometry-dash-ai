@@ -19,15 +19,19 @@ namespace controls
         }
     }
 
-    void loadFromPercent(int percent) {
+    void loadFromPercent(int percent)
+    {
 
-        if (auto pl = GameManager::sharedState()->getPlayLayer()) {
+        if (auto pl = GameManager::sharedState()->getPlayLayer())
+        {
             auto checkpoints = pl->m_checkpointArray;
-            if (!checkpoints) return;
+            if (!checkpoints)
+                return;
             float targetX = (percent / 100.0f) * pl->m_levelLength;
 
             SafeState state = {105.0f, 0, 0.0f, 0.0f}; // fallback
-            if (g_safeStateMap.contains(percent)) {
+            if (g_safeStateMap.contains(percent))
+            {
                 state = g_safeStateMap[percent];
             }
 
@@ -47,7 +51,6 @@ namespace controls
             pl->destroyPlayer(player, nullptr);
         }
     }
-
 
     void releaseJump()
     {
@@ -90,8 +93,10 @@ namespace controls
         }
     }
 
-    bool isDead() {
-        if (auto pl = GameManager::sharedState()->getPlayLayer()) {
+    bool isDead()
+    {
+        if (auto pl = GameManager::sharedState()->getPlayLayer())
+        {
             return pl->m_player1 && pl->m_player1->m_isDead;
         }
         return false;
