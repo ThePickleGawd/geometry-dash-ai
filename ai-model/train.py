@@ -33,8 +33,9 @@ def listen_for_frame_buffer():
                 print("Connection lost")
                 break
 
-            tensor = torch.from_numpy(frame).permute(2, 0, 1) # HWC → CHW
+            tensor = torch.from_numpy(frame).unsqueeze(0)
             tensor = tensor.flip(-2) # vertical flip
+            print(tensor.shape)
 
             # drop if full, then enqueue
             if frame_queue.full():
@@ -68,7 +69,8 @@ def build_state(transform):
 
 def train(num_episodes=1000, max_steps=1000, resume=False):
     env   = GeometryDashEnv()
-    model = DQNModel()
+    device = "cuda" if torch.cuda.is_available() else "mps"
+    model = DQNModel().to(device)
     agent = Agent(model)
     start_ep = 0
 
@@ -107,7 +109,7 @@ def train(num_episodes=1000, max_steps=1000, resume=False):
             # Get resutling state and train
             next_state = build_state(transform)
             agent.remember(state, action, reward, next_state, done)
-            agent.train()
+            # agent.train()
 
             state = next_state
 

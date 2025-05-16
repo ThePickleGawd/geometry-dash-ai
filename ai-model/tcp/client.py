@@ -52,7 +52,9 @@ class GDClient:
             return None
 
         img = np.frombuffer(image_data, dtype=np.uint8).reshape((height, width, 4))
-        return cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
+        gray = cv2.cvtColor(img, cv2.COLOR_RGBA2GRAY)
+        gray_small = cv2.resize(gray, (gray.shape[1] // 2, gray.shape[0] // 2), interpolation=cv2.INTER_AREA)
+        return gray_small
 
     def _recv_exact(self, sock, size):
         buffer = b''

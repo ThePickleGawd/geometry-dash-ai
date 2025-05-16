@@ -46,7 +46,7 @@ class Agent:
         batch = random.sample(self.replay_buffer, self.batch_size)
         states, actions, rewards, next_states, dones = zip(*batch)
 
-        states = torch.cat(states, dim=0).float()
+        states = torch.cat(states, dim=0).float().to(self.model.device)
         next_states = torch.cat(next_states, dim=0).float()
         actions = torch.tensor(actions).long().unsqueeze(1)
         rewards = torch.tensor(rewards).float()
