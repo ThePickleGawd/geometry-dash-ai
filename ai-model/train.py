@@ -33,6 +33,8 @@ def listen_for_frame_buffer():
                 print("Connection lost")
                 break
 
+            
+            print('FRAME SHAPE:',frame.shape)
             tensor = torch.from_numpy(frame).permute(2, 0, 1) # HWC → CHW
             tensor = tensor.flip(-2) # vertical flip
 
@@ -69,8 +71,13 @@ def build_state(transform):
 def train(num_episodes=100, max_steps=10000, resume=False):
     env   = GeometryDashEnv()
     model = DQNModel()
-    agent = Agent(model)
+    # device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+    device = torch.device('mps')
+    model = model.to(device=device)
+    agent = Agent(model,device)
     start_ep = 0
+    best_percent = 0
+    
 
     # resume
     if resume and os.path.exists("checkpoints/latest.pt"):
@@ -103,7 +110,7 @@ def train(num_episodes=100, max_steps=10000, resume=False):
             action = agent.act(state)
 
             # Simulate
-            _, reward, done, _ = env.step(action)
+            _, reward, done, info = env.step(action)
             total_r += reward
             print("total reward:",total_r)
 
@@ -113,7 +120,8 @@ def train(num_episodes=100, max_steps=10000, resume=False):
             agent.train()
 
             state = next_state
-
+            if info['percent']>best_percent:
+                best_percent = info['percent']
             #done NEEDS TO BE IMPLEMENTED/FIXED
             if done:
                 print(f"Died at step {step}.")
@@ -128,10 +136,11 @@ def train(num_episodes=100, max_steps=10000, resume=False):
                 "model_state": agent.model.state_dict(),
                 "optimizer_state": agent.optimizer.state_dict(),
             }, "checkpoints/latest.pt")
-            torch.save(agent.replay_buffer,f"checkpoints/replay_buffer_ep{ep}.pt")
+            # torch.save(agent.replay_buffer,f"checkpoints/replay_buffer_ep{ep}.pt")
             print(f"Saved checkpoint @ ep {ep+1}")
 
     env.close()
+    print("\nBEST PERCENTAGE:",best_percent)
 
 if __name__ == "__main__":
     start_geometry_dash()

@@ -2,6 +2,8 @@
 
 # Model
 FRAME_STACK_SIZE = 4 # How many frames to stack in state, sent to model
+COLOR = 1
+SCALE = 4
 
 # TCP Client
 COMMAND_PORT = 22222 # Sends commands like "step, restart"

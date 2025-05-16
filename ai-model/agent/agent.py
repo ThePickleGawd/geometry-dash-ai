@@ -12,11 +12,12 @@ from config import (
 )
 
 class Agent:
-    def __init__(self, model):
+    def __init__(self, model,device):
         self.action_dim = ACTION_DIM
         self.model = model
         self.target_model = type(model)()
         self.target_model.load_state_dict(model.state_dict())
+        self.target_model = self.target_model.to(device)
 
         self.optimizer = torch.optim.Adam(model.parameters(), lr=LR)
         self.criterion = nn.MSELoss()
@@ -28,12 +29,14 @@ class Agent:
 
         self.replay_buffer = deque(maxlen=BUFFER_SIZE)
         self.batch_size = BATCH_SIZE
+        
+        self.device = device
 
     def act(self, state):
         if random.random() < self.epsilon:
             return random.randint(0, self.action_dim - 1)
         with torch.no_grad():
-            q_values = self.model(state)
+            q_values = self.model(state.to(self.device))
         return q_values.argmax().item()
 
     def remember(self, state, action, reward, next_state, done):
@@ -49,16 +52,20 @@ class Agent:
         states, actions, rewards, next_states, dones = zip(*batch)
 
         states = torch.cat(states, dim=0).float()
+        states = states.to(device=self.device)
         next_states = torch.cat(next_states, dim=0).float()
-        actions = torch.tensor(actions).long().unsqueeze(1)
-        rewards = torch.tensor(rewards).float()
-        dones = torch.tensor(dones).float()
+        next_states = next_states.to(device=self.device)
+        actions = torch.tensor(actions,device=self.device).long().unsqueeze(1)
+        rewards = torch.tensor(rewards,device=self.device).float()
+        dones = torch.tensor(dones,device=self.device).float()
 
         curr_q = self.model(states).gather(1, actions).squeeze()
         next_q = self.target_model(next_states).max(1)[0].detach()
         expected_q = rewards + self.gamma * next_q * (1 - dones)
-
+        # curr_q = curr_q.to(self.device)
+        # expected_q = expected_q.to(self.device)
         loss = self.criterion(curr_q, expected_q)
+        print('loss device is:',loss.get_device())
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
