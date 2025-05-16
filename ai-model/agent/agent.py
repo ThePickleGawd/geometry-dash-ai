@@ -14,8 +14,10 @@ from config import (
 class Agent:
     def __init__(self, model):
         self.action_dim = ACTION_DIM
+        
+        self.device = next(model.parameters()).device
         self.model = model
-        self.target_model = type(model)()
+        self.target_model = type(model)().to(self.device)
         self.target_model.load_state_dict(model.state_dict())
 
         self.optimizer = torch.optim.Adam(model.parameters(), lr=LR)
@@ -30,6 +32,8 @@ class Agent:
         self.batch_size = BATCH_SIZE
 
     def act(self, state):
+        state = state.to(self.device)
+
         if random.random() < self.epsilon:
             return random.randint(0, self.action_dim - 1)
         with torch.no_grad():
@@ -46,11 +50,11 @@ class Agent:
         batch = random.sample(self.replay_buffer, self.batch_size)
         states, actions, rewards, next_states, dones = zip(*batch)
 
-        states = torch.cat(states, dim=0).float().to(self.model.device)
-        next_states = torch.cat(next_states, dim=0).float()
-        actions = torch.tensor(actions).long().unsqueeze(1)
-        rewards = torch.tensor(rewards).float()
-        dones = torch.tensor(dones).float()
+        states = torch.cat(states, dim=0).float().to(self.device)
+        next_states = torch.cat(next_states, dim=0).float().to(self.device)
+        actions = torch.tensor(actions).long().unsqueeze(1).to(self.device)
+        rewards = torch.tensor(rewards).float().to(self.device)
+        dones = torch.tensor(dones).float().to(self.device)
 
         curr_q = self.model(states).gather(1, actions).squeeze()
         next_q = self.target_model(next_states).max(1)[0].detach()

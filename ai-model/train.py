@@ -7,6 +7,7 @@ from threading import Thread
 from collections import deque
 from torchvision.transforms import v2
 from tqdm import tqdm
+import cv2
 
 from geometry_dash_gym.envs import GeometryDashEnv
 from tcp import gdclient
@@ -35,7 +36,6 @@ def listen_for_frame_buffer():
 
             tensor = torch.from_numpy(frame).unsqueeze(0)
             tensor = tensor.flip(-2) # vertical flip
-            print(tensor.shape)
 
             # drop if full, then enqueue
             if frame_queue.full():
@@ -83,7 +83,7 @@ def train(num_episodes=1000, max_steps=1000, resume=False):
         print(f"Resumed at episode {start_ep}")
 
     transform = v2.Compose([
-        v2.Resize((1270, 720)),
+        v2.Resize((128, 128)),
         v2.ToDtype(torch.float32, scale=True),
     ])
 
