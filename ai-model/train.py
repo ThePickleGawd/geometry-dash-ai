@@ -67,13 +67,14 @@ def build_state(transform):
     stacked = torch.cat(processed, dim=0).unsqueeze(0)
     return stacked
 
-def train(num_episodes=1000, max_steps=1000, resume=False):
+def train(num_episodes=100, max_steps=10000, resume=False):
     env   = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
     model = DQNModel().to(device)
     agent = Agent(model)
     start_ep = 0
-
+    best_percent = 0
+    
     # resume
     if resume and os.path.exists("checkpoints/latest.pt"):
         cp = torch.load("checkpoints/latest.pt")
@@ -92,6 +93,8 @@ def train(num_episodes=1000, max_steps=1000, resume=False):
     time.sleep(5)
 
     for ep in range(start_ep, num_episodes):
+        #Spawn in randomly NEED TO BE IMPLEMENTED
+        print("NEW RUN")
         env.reset()
         total_r = 0
 
@@ -103,8 +106,9 @@ def train(num_episodes=1000, max_steps=1000, resume=False):
             action = agent.act(state)
 
             # Simulate
-            _, reward, done, _ = env.step(action)
+            _, reward, done, info = env.step(action)
             total_r += reward
+            print("total reward:",total_r)
 
             # Get resutling state and train
             next_state = build_state(transform)
@@ -112,9 +116,11 @@ def train(num_episodes=1000, max_steps=1000, resume=False):
             # agent.train()
 
             state = next_state
-
+            if info['percent']>best_percent:
+                best_percent = info['percent']
+            #done NEEDS TO BE IMPLEMENTED/FIXED
             if done:
-                print(f"Died at step {step}. New Episode")
+                print(f"Died at step {step}.")
                 break
 
 
@@ -126,9 +132,11 @@ def train(num_episodes=1000, max_steps=1000, resume=False):
                 "model_state": agent.model.state_dict(),
                 "optimizer_state": agent.optimizer.state_dict(),
             }, "checkpoints/latest.pt")
+            # torch.save(agent.replay_buffer,f"checkpoints/replay_buffer_ep{ep}.pt")
             print(f"Saved checkpoint @ ep {ep+1}")
 
     env.close()
+    print("\nBEST PERCENTAGE:",best_percent)
 
 if __name__ == "__main__":
     start_geometry_dash()
