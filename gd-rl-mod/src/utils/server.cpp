@@ -101,7 +101,7 @@ namespace tcpserver
 
                     geode::queueInMainThread([percent]
                                              {
-                        controls::resetLevel(); 
+                        // controls::resetLevel(); 
                         controls::loadFromPercent(percent); });
                 }
 

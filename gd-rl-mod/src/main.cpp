@@ -8,10 +8,19 @@
 #include <cstdlib>
 #include "utils/server.hpp"
 #include "utils/safe_states.hpp"
+#include <filesystem>
+#include <string_view>
 
 using namespace geode::prelude;
 
 // ============== Entry Point ==============
+std::string getSourceDir()
+{
+	// __FILE__ gives full path to *this* source file at compile time
+	constexpr std::string_view filePath = __FILE__;
+	return std::filesystem::path(filePath).parent_path().string();
+}
+
 $on_mod(Loaded)
 {
 	log::info("Mod loaded, let's setup tcp server");
@@ -57,6 +66,13 @@ class $modify(MyPlayLayer, PlayLayer)
 	bool init(GJGameLevel *level, bool p1, bool p2)
 	{
 		log::info("Level started");
+
+		if (m_fields->loadStates)
+		{
+			std::string path = getSourceDir() + "/safe_states/stereo_madness_states.txt";
+			loadSafeStatesFromFile(path);
+			log::info("Safe state map size: {}", g_safeStateMap.size());
+		}
 
 		return PlayLayer::init(level, p1, p2);
 	}
@@ -113,13 +129,6 @@ class $modify(MyPlayLayer, PlayLayer)
 			{
 				saveSafeStatesToFile(g_safeStateMap);
 			}
-		}
-
-		// Otherwise, load once
-		else if (!m_fields->saveStates && m_fields->loadStates)
-		{
-			loadSafeStatesFromFile("safe_states/stereo_madness_states.txt"); // i'm assuming we are just sticking to the first level
-			m_fields->loadStates = false;
 		}
 
 		// if (controls::isDead())

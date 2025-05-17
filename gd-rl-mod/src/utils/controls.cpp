@@ -31,9 +31,14 @@ namespace controls
             SafeState state = {105.0f, 0, 0.0f, 0.0f}; // fallback
             if (g_safeStateMap.contains(percent))
             {
-                log::info("AHHHH");
+                log::info("YEAH");
                 state = g_safeStateMap[percent];
             }
+            else
+            {
+                log::info("OH NO {}", percent);
+            }
+            log::info("Safe state map size: {}", g_safeStateMap.size());
 
             auto player = pl->m_player1;
             player->setPosition({targetX, state.y});
