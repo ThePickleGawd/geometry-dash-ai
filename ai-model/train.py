@@ -99,11 +99,19 @@ def train(num_episodes=100, max_steps=10000, resume=False):
 
         # Init state
         state = build_state(transform)
+        
 
         pbar = tqdm(range(max_steps), desc=f"Ep{ep+1}")
         for step in pbar:
             # Get predicted action
             action = agent.act(state)
+
+            img = state[0, -1]  # take the most recent frame (C, H, W)
+            img_np = img.permute(1, 2, 0).cpu().numpy()  # CHW → HWC
+            img_np = (img_np * 255).astype('uint8')      # scale to [0, 255] if float32
+
+            cv2.imshow("test", img_np)
+            cv2.waitKey(1)
 
             # Simulate
             _, reward, done, info = env.step(action)
