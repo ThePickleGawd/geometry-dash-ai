@@ -192,7 +192,7 @@ class $modify(RLCCKeyboardDispatcher, CCKeyboardDispatcher)
 		}
 		else if (down && key == cocos2d::KEY_P)
 		{
-			controls::loadFromPercent(80);
+			controls::loadFromPercent(92);
 		}
 
 		// Let other keys go through

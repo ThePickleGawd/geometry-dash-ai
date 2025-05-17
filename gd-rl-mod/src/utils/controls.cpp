@@ -2,6 +2,7 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/PlayerObject.hpp>
+#include <Geode/utils/casts.hpp>
 #include "safe_states.hpp"
 
 using namespace geode::prelude;
@@ -43,8 +44,16 @@ namespace controls
             auto player = pl->m_player1;
             player->setPosition({targetX, state.y});
             player->setRotation(state.rotation);
-            player->m_savedObjectType = static_cast<GameObjectType>(state.gamemode);
             player->m_yVelocity = state.yVelocity;
+
+            if ((percent >= 29 && percent <= 46) || percent >= 85) { // hard-coded ship intervals for stereo madness
+                player->m_isShip = true;
+                player->resetPlayerIcon();
+                log::info("SHIPPPPPPPPPPPPP at percent {}", percent);
+            } else {
+                player->m_isShip = false;
+                player->resetPlayerIcon();
+            }
 
             auto checkpoint = pl->createCheckpoint();
             pl->storeCheckpoint(checkpoint);
