@@ -36,8 +36,8 @@ class GeometryDashEnv(gym.Env):
         reward = -1.0
         if (action==1):
             reward = -10.0
-        if (info['percent'] > self.prePercent and (info['percent']%2) < (self.prePercent%2)):
-            reward = 75
+        if (info['percent'] > self.prePercent and (info['percent']%3) < (self.prePercent%3)):
+            reward = 100
 
         if done:
             reward = -10000
