@@ -1,6 +1,6 @@
 import gymnasium as gym
 from gymnasium import spaces
-
+import random
 from enum import Enum
 import numpy as np
 
@@ -44,8 +44,7 @@ class GeometryDashEnv(gym.Env):
 
     def reset(self):
         # Reset the level
-        info = gdclient.send_command("reset")
-
+        info = gdclient.send_command(f"reset {random.randint(1, 99)}")
         observation = None # Dummy
         return observation
 

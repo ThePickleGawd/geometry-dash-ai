@@ -79,8 +79,30 @@ namespace tcpserver
 
                 if (command.find("reset") != std::string::npos)
                 {
-                    geode::queueInMainThread([]
-                                             { controls::resetLevel(); });
+                    int percent = 1; // default
+                    std::istringstream iss(command);
+                    std::string word;
+                    while (iss >> word)
+                    {
+                        try
+                        {
+                            int val = std::stoi(word);
+                            if (val >= 1 && val <= 99)
+                            {
+                                percent = val;
+                                break;
+                            }
+                        }
+                        catch (...)
+                        {
+                            // skip non-integer words
+                        }
+                    }
+
+                    geode::queueInMainThread([percent]
+                                             {
+                        controls::resetLevel(); 
+                        controls::loadFromPercent(percent); });
                 }
 
                 if (command.find("step") != std::string::npos)
@@ -93,7 +115,7 @@ namespace tcpserver
                 float percent = (pl->m_player1->getPositionX() / pl->m_levelLength) * 100.0f;
                 std::string response = fmt::format(R"({{"dead": {}, "percent": {}}})", died ? "true" : "false", percent);
 
-                log::info("Sending response: {}", response);
+                // log::info("Sending response: {}", response);
                 send(new_socket, response.c_str(), response.size(), 0);
             }
         }
