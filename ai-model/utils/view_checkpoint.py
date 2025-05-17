@@ -2,7 +2,7 @@ import torch
 import matplotlib.pyplot as plt
 
 # Load checkpoint
-cp = torch.load("../checkpoints/5503.pt")
+cp = torch.load("../checkpoints/latest.pt")
 time_alive_per_ep = cp.get("time_alive", {})
 
 # Sort episodes for consistent x-axis
