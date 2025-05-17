@@ -14,6 +14,7 @@ BASE_URL = "127.0.0.1"
 SAVE_EPOCH = 1
 
 # Hyperparameters
+STEPS_BEFORE_TARGET_UPDATE = 1000
 ACTION_DIM = 2       # jump / no jump
 
 LR = 1e-3
