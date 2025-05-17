@@ -51,7 +51,7 @@ class $modify(MyPlayLayer, PlayLayer)
 		int framesToStep = 0;
 		int frame_count = 0;
 		bool saveStates = false; // determines whether to save game states for checkpoint loading
-		bool loadStates = true; // determines whether to load game states into map
+		bool loadStates = true;	 // determines whether to load game states into map
 	};
 
 	bool init(GJGameLevel *level, bool p1, bool p2)
@@ -85,12 +85,15 @@ class $modify(MyPlayLayer, PlayLayer)
 			}
 			m_fields->framesToStep--;
 		}
-		if (m_fields->frame_count % 15 == 0)
+		if (m_fields->frame_count % 5 == 0) // You can send frames less often if there's issues
 		{
 			this->sendFrameToPython();
 		}
 		m_fields->frame_count++;
-		if (m_isPracticeMode && m_player1 && m_fields->saveStates) {
+
+		// If we want to record our checkpoints (manually I think)
+		if (m_isPracticeMode && m_player1 && m_fields->saveStates)
+		{
 			float percent = (m_player1->getPositionX() / m_levelLength) * 100.0f;
 			int int_percent = static_cast<int>(percent);
 
@@ -100,24 +103,33 @@ class $modify(MyPlayLayer, PlayLayer)
 			float yVel = m_player1->m_yVelocity;
 
 			auto it = g_safeStateMap.find(int_percent);
-			if ((it == g_safeStateMap.end() || currentY < it->second.y) && std::abs(int_percent - percent) < 0.05) {
-				g_safeStateMap[int_percent] = { currentY, gamemode, rotation, yVel };
+			if ((it == g_safeStateMap.end() || currentY < it->second.y) && std::abs(int_percent - percent) < 0.05)
+			{
+				g_safeStateMap[int_percent] = {currentY, gamemode, rotation, yVel};
 			}
 
 			// Save periodically or at 100%
-			if (int_percent == 100 || m_fields->frame_count % 300 == 0) {
+			if (int_percent == 100 || m_fields->frame_count % 300 == 0)
+			{
 				saveSafeStatesToFile(g_safeStateMap);
 			}
-		} else if (!m_fields->saveStates && m_fields->loadStates) {
+		}
+
+		// Otherwise, load once
+		else if (!m_fields->saveStates && m_fields->loadStates)
+		{
 			loadSafeStatesFromFile("safe_states/stereo_madness_states.txt"); // i'm assuming we are just sticking to the first level
 			m_fields->loadStates = false;
 		}
 
-		if (controls::isDead()) {
-			log::info("player is dead");
-		} else {
-			log::info("player is alive");
-		}
+		// if (controls::isDead())
+		// {
+		// 	log::info("player is dead");
+		// }
+		// else
+		// {
+		// 	log::info("player is alive");
+		// }
 
 		PlayLayer::postUpdate(p0);
 	}
@@ -132,7 +144,7 @@ class $modify(MyPlayLayer, PlayLayer)
 
 		// Read buffer
 		unsigned char *buffer = new unsigned char[width * height * 4];
-		log::info("Capturing screen of size {}x{}", width, height);
+		// log::info("Capturing screen of size {}x{}", width, height);
 		glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 
 		// Send to AI Model via TCP

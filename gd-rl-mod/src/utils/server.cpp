@@ -115,7 +115,7 @@ namespace tcpserver
                 float percent = (pl->m_player1->getPositionX() / pl->m_levelLength) * 100.0f;
                 std::string response = fmt::format(R"({{"dead": {}, "percent": {}}})", died ? "true" : "false", percent);
 
-                log::info("Sending response: {}", response);
+                // log::info("Sending response: {}", response);
                 send(new_socket, response.c_str(), response.size(), 0);
             }
         }

@@ -21,7 +21,6 @@ namespace controls
 
     void loadFromPercent(int percent)
     {
-
         if (auto pl = GameManager::sharedState()->getPlayLayer())
         {
             auto checkpoints = pl->m_checkpointArray;
@@ -32,6 +31,7 @@ namespace controls
             SafeState state = {105.0f, 0, 0.0f, 0.0f}; // fallback
             if (g_safeStateMap.contains(percent))
             {
+                log::info("AHHHH");
                 state = g_safeStateMap[percent];
             }
 
@@ -48,7 +48,7 @@ namespace controls
             pl->loadFromCheckpoint(checkpoint);
             player->loadFromCheckpoint(checkpoint->m_player1Checkpoint);
 
-            pl->destroyPlayer(player, nullptr);
+            // pl->destroyPlayer(player, nullptr);
         }
     }
 
