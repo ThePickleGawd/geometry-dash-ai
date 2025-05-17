@@ -59,6 +59,7 @@ class $modify(MyPlayLayer, PlayLayer)
 		bool frameStepMode = true;
 		int framesToStep = 0;
 		int frame_count = 0;
+		int jump_frames = 0;
 		bool saveStates = false; // determines whether to save game states for checkpoint loading
 		bool loadStates = true;	 // determines whether to load game states into map
 	};
@@ -99,7 +100,16 @@ class $modify(MyPlayLayer, PlayLayer)
 			{
 				controls::freeze();
 			}
+			if (m_fields->jump_frames > 0)
+			{
+				controls::pressJump();
+			}
+			else
+			{
+				controls::releaseJump();
+			}
 			m_fields->framesToStep--;
+			m_fields->jump_frames--;
 		}
 		if (m_fields->frame_count % 5 == 0) // You can send frames less often if there's issues
 		{
@@ -130,15 +140,6 @@ class $modify(MyPlayLayer, PlayLayer)
 				saveSafeStatesToFile(g_safeStateMap);
 			}
 		}
-
-		// if (controls::isDead())
-		// {
-		// 	log::info("player is dead");
-		// }
-		// else
-		// {
-		// 	log::info("player is alive");
-		// }
 
 		PlayLayer::postUpdate(p0);
 	}
@@ -218,10 +219,11 @@ namespace controls
 				{
 					if (press_jump)
 					{
-						controls::unfreeze();
-						mypl->m_player1->pushButton(PlayerButton::Jump);
+						// controls::unfreeze();
+						// mypl->m_player1->pushButton(PlayerButton::Jump);
+						mypl->m_fields->jump_frames = std::min(frames, 5);
 					}
-					mypl->m_player1->lockPlayer();
+					// mypl->m_player1->lockPlayer();
 				}
 			}
 		}
