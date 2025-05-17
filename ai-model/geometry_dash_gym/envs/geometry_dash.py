@@ -3,6 +3,7 @@ from gymnasium import spaces
 import random
 from enum import Enum
 import numpy as np
+import config
 
 from tcp import gdclient
 
@@ -35,8 +36,8 @@ class GeometryDashEnv(gym.Env):
         reward = -1.0
         if (action==1):
             reward = -10.0
-        if (info['percent'] > self.prePercent and (info['percent']%3) < (self.prePercent%3)):
-            reward = 100
+        if (info['percent'] > self.prePercent and (info['percent']%2) < (self.prePercent%2)):
+            reward = 75
 
         if done:
             reward = -10000
@@ -46,7 +47,8 @@ class GeometryDashEnv(gym.Env):
 
     def reset(self):
         # Reset the level
-        info = gdclient.send_command(f"reset {random.randint(1, 80)}")
+        if config.RANDOM_SPAWN :
+            info = gdclient.send_command(f"reset {random.randint(1, 80)}")
         observation = None # Dummy
         return observation
 

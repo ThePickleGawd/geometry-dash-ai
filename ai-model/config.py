@@ -12,6 +12,7 @@ BASE_URL = "127.0.0.1"
 
 # Train settings
 SAVE_EPOCH = 1
+RANDOM_SPAWN = False
 
 # Hyperparameters
 STEPS_BEFORE_TARGET_UPDATE = 1000
