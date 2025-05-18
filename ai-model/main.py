@@ -1,1 +1,0 @@
-# TODO: Demo the trained model
