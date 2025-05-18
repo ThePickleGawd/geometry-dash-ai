@@ -67,7 +67,7 @@ def build_state(transform):
     stacked = torch.cat(processed, dim=0).unsqueeze(0)
     return stacked
 
-def train(num_episodes=50000, max_steps=10000, resume=True):
+def play(num_episodes=50000, max_steps=10000, resume=True):
     env   = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
     model = DQNModel().to(device)
@@ -146,4 +146,4 @@ if __name__ == "__main__":
     start_geometry_dash()
     gdclient.connect()
     Thread(target=listen_for_frame_buffer, daemon=True).start()
-    train()
+    play()

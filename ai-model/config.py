@@ -16,8 +16,8 @@ FRAME_PORT = 22223 # Receives frame buffer
 BASE_URL = "127.0.0.1"
 
 # Train settings
-SAVE_EPOCH = 1000
-RANDOM_SPAWN = False
+SAVE_EPOCH = 500
+RANDOM_SPAWN = True
 
 # Hyperparameters
 STEPS_BEFORE_TARGET_UPDATE = 1000

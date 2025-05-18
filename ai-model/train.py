@@ -71,7 +71,7 @@ def build_state(transform):
 def train(num_episodes=50000, max_steps=10000, resume=True):
     env   = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
-    model = DUEL_DQNModel().to(device)
+    model = DQNModel().to(device)
     agent = Agent(model)
 
     start_ep = 0
@@ -84,9 +84,9 @@ def train(num_episodes=50000, max_steps=10000, resume=True):
         agent.model.load_state_dict(cp["model_state"])
         agent.target_model.load_state_dict(cp["model_state"])
         agent.optimizer.load_state_dict(cp["optimizer_state"])
-        agent.epsilon_decay = config.EPSILON_START * (config.EPSILON_DECAY ** (start_ep * 20)) # TODO: A hack to step epsilon (assume about 20 steps per episode)
         start_ep = cp["episode"] + 1
         time_alive_per_ep = cp.get("time_alive", {})
+        agent.epsilon = config.EPSILON_START * (config.EPSILON_DECAY ** (start_ep * 20)) # TODO: A hack to step epsilon (assume about 20 steps per episode)
         print(f"Resumed at episode {start_ep}")
 
     transform = v2.Compose([
