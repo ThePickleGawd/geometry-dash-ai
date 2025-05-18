@@ -8,7 +8,7 @@ from collections import deque
 from config import (
     ACTION_DIM, LR, GAMMA,
     EPSILON_START, EPSILON_DECAY, EPSILON_MIN,
-    BUFFER_SIZE, BATCH_SIZE
+    BUFFER_SIZE, BATCH_SIZE, DEATH_BATCH_SIZE
 )
 
 class Agent:
@@ -29,7 +29,9 @@ class Agent:
         self.epsilon_min = EPSILON_MIN
 
         self.replay_buffer = deque(maxlen=BUFFER_SIZE)
+        self.death_replay_buffer = deque(maxlen=BUFFER_SIZE)
         self.batch_size = BATCH_SIZE
+        self.death_batch_size = DEATH_BATCH_SIZE
 
     def act(self, state):
         state = state.to(self.device)
@@ -43,11 +45,23 @@ class Agent:
     def remember(self, state, action, reward, next_state, done):
         self.replay_buffer.append((state, action, reward, next_state, done))
 
+    def save_death_replay(self):
+        # Must be called on death. Will save the last few frames. Ignore frames right when we die
+        last_5 = list(self.replay_buffer)[-20:-10]
+        for t in last_5:
+            self.death_replay_buffer.append(t)
+
+
     def train(self):
         if len(self.replay_buffer) < self.batch_size:
             return
 
         batch = random.sample(self.replay_buffer, self.batch_size)
+
+        # We want to enforce some death memories
+        if len(self.death_replay_buffer) > self.death_batch_size:
+            batch.extend(random.sample(self.death_replay_buffer, self.death_batch_size))
+
         states, actions, rewards, next_states, dones = zip(*batch)
 
         states = torch.cat(states, dim=0).float().to(self.device)

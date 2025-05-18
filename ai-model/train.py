@@ -146,6 +146,7 @@ def train(num_episodes=50000, max_steps=10000, resume=True):
             
             if done:
                 print(f"Died at step {step}.")
+                agent.save_death_replay()
                 break
         
         end_time = time.time()
