@@ -11,7 +11,7 @@ import cv2
 
 from geometry_dash_gym.envs import GeometryDashEnv
 from tcp import gdclient
-from model import DQNModel
+from model import DQNModel, DUEL_DQNModel
 from agent import Agent
 import config
 
@@ -67,10 +67,10 @@ def build_state(transform):
     stacked = torch.cat(processed, dim=0).unsqueeze(0)
     return stacked
 
-def train(num_episodes=10000, max_steps=10000, resume=True):
+def train(num_episodes=10000, max_steps=10000, resume=False):
     env   = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
-    model = DQNModel().to(device)
+    model = DUEL_DQNModel().to(device)
     agent = Agent(model)
     start_ep = 0
     best_percent = 0    
