@@ -79,6 +79,7 @@ def train(num_episodes=50000, max_steps=10000, resume=True):
     if resume and os.path.exists("checkpoints/latest.pt"):
         cp = torch.load("checkpoints/latest.pt")
         agent.model.load_state_dict(cp["model_state"])
+        agent.target_model.load_state_dict(cp["model_state"])
         agent.optimizer.load_state_dict(cp["optimizer_state"])
         start_ep = cp["episode"] + 1
         time_alive_per_ep = cp.get("time_alive", {})

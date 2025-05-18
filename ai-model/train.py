@@ -82,6 +82,7 @@ def train(num_episodes=50000, max_steps=10000, resume=True):
     if resume and os.path.exists("checkpoints/latest.pt"):
         cp = torch.load("checkpoints/latest.pt")
         agent.model.load_state_dict(cp["model_state"])
+        agent.target_model.load_state_dict(cp["model_state"])
         agent.optimizer.load_state_dict(cp["optimizer_state"])
         agent.epsilon_decay = config.EPSILON_START * (config.EPSILON_DECAY ** (start_ep * 20)) # TODO: A hack to step epsilon (assume about 20 steps per episode)
         start_ep = cp["episode"] + 1
@@ -100,7 +101,8 @@ def train(num_episodes=50000, max_steps=10000, resume=True):
     total_steps = 0
 
     for ep in range(start_ep, num_episodes):
-        env.reset(random.randint(1, 80))
+        pct = random.randint(1, 80) if config.RANDOM_SPAWN else 1
+        env.reset(pct)
 
         start_time = time.time()
         total_r = 0
