@@ -1,10 +1,11 @@
+#include "utils/platform.hpp"
+
 #include <Geode/Geode.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/PlayerObject.hpp>
 #include <Geode/modify/CCKeyboardDispatcher.hpp>
 #include <Geode/modify/AppDelegate.hpp>
 #include "utils/controls.hpp"
-#include <OpenGL/gl.h>
 #include <cstdlib>
 #include "utils/server.hpp"
 #include "utils/safe_states.hpp"
@@ -206,7 +207,7 @@ class $modify(RLCCKeyboardDispatcher, CCKeyboardDispatcher)
 // I kinda hate this, but it depends on MyPlayLayer so we need to put this function here
 namespace controls
 {
-	inline void step(int frames, bool press_jump)
+	void step(int frames, bool press_jump)
 	{
 		if (auto pl = PlayLayer::get())
 		{
