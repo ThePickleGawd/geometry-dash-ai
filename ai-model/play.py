@@ -11,10 +11,9 @@ import cv2
 
 from geometry_dash_gym.envs import GeometryDashEnv
 from tcp import gdclient
-from model import DQNModel, DUEL_DQNModel
+from model import DQNModel
 from agent import Agent
 import config
-import random
 
 # frame_queue gets piped all frame data all the time. frame_buffer is built from frame_queue when we need to see the state
 frame_queue = queue.Queue(maxsize=config.FRAME_STACK_SIZE * 2)
@@ -68,23 +67,20 @@ def build_state(transform):
     stacked = torch.cat(processed, dim=0).unsqueeze(0)
     return stacked
 
-def train(num_episodes=50000, max_steps=10000, resume=False):
+def train(num_episodes=50000, max_steps=10000, resume=True):
     env   = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
-    model = DUEL_DQNModel().to(device)
+    model = DQNModel().to(device)
     agent = Agent(model)
-
+    agent.epsilon = 0
     start_ep = 0
     best_percent = 0    
-    time_alive_per_ep = {}
-
     # resume
     if resume and os.path.exists("checkpoints/latest.pt"):
         cp = torch.load("checkpoints/latest.pt")
         agent.model.load_state_dict(cp["model_state"])
         agent.target_model.load_state_dict(cp["model_state"])
         agent.optimizer.load_state_dict(cp["optimizer_state"])
-        agent.epsilon_decay = config.EPSILON_START * (config.EPSILON_DECAY ** (start_ep * 20)) # TODO: A hack to step epsilon (assume about 20 steps per episode)
         start_ep = cp["episode"] + 1
         time_alive_per_ep = cp.get("time_alive", {})
         print(f"Resumed at episode {start_ep}")
@@ -101,10 +97,8 @@ def train(num_episodes=50000, max_steps=10000, resume=False):
     total_steps = 0
 
     for ep in range(start_ep, num_episodes):
-        pct = random.randint(1, 80) if config.RANDOM_SPAWN else 1
-        env.reset(pct)
+        env.reset()
 
-        start_time = time.time()
         total_r = 0
 
         # Init state
@@ -132,9 +126,6 @@ def train(num_episodes=50000, max_steps=10000, resume=False):
 
             # Get resutling state and train
             next_state = build_state(transform)
-            agent.remember(state, action, reward, next_state, done)
-            agent.train()
-
             state = next_state
             if info['percent']>best_percent:
                 best_percent = info['percent']
@@ -147,32 +138,9 @@ def train(num_episodes=50000, max_steps=10000, resume=False):
             if done:
                 print(f"Died at step {step}.")
                 break
-        
-        end_time = time.time()
-        time_alive = end_time - start_time
-        time_alive_per_ep[ep] = time_alive  # save for this ep
 
         print(f"Ep {ep+1} → reward {total_r:.1f}")
 
-        if (ep + 1) % config.SAVE_EPOCH == 0:
-            torch.save({
-                "episode": ep,
-                "model_state": agent.model.state_dict(),
-                "optimizer_state": agent.optimizer.state_dict(),
-                "time_alive": time_alive_per_ep,
-            }, f"checkpoints/{ep+1}.pt")
-            # torch.save(agent.replay_buffer,f"checkpoints/replay_buffer_ep{ep}.pt")
-            print(f"Saved checkpoint @ ep {ep+1}")
-
-        torch.save({
-            "episode": ep,
-            "model_state": agent.model.state_dict(),
-            "optimizer_state": agent.optimizer.state_dict(),
-            "time_alive": time_alive_per_ep,
-        }, f"checkpoints/latest.pt")
-
-    env.close()
-    print("\nBEST PERCENTAGE:", best_percent)
 
 if __name__ == "__main__":
     start_geometry_dash()

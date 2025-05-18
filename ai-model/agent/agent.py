@@ -12,7 +12,7 @@ from config import (
 )
 
 class Agent:
-    def __init__(self, model):
+    def __init__(self, model, start_ep=0):
         self.action_dim = ACTION_DIM
         
         self.device = next(model.parameters()).device
