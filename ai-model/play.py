@@ -130,11 +130,6 @@ def play(num_episodes=50000, max_steps=10000, resume=True):
             if info['percent']>best_percent:
                 best_percent = info['percent']
             
-            # Update target network every 1000 steps
-            total_steps += 1
-            if total_steps % config.STEPS_BEFORE_TARGET_UPDATE == 0:
-                agent.update_target_network()
-            
             if done:
                 print(f"Died at step {step}.")
                 break
