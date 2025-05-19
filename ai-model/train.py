@@ -179,4 +179,4 @@ if __name__ == "__main__":
     start_geometry_dash()
     gdclient.connect()
     Thread(target=listen_for_frame_buffer, daemon=True).start()
-    train()
+    train(resume=False)
