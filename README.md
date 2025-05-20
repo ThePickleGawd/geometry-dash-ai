@@ -1,6 +1,12 @@
 # Reinforcement Learning for Geometry Dash
 
-Final Project for CS 190A: Machine Learning.
+A Deep Q Network to learn Geometry Dash and a C++ mod to control the game. Our final project for UCSB CS 190A: Machine Learning.
+
+![demo](docs/demo.gif)
+
+## Setup
+
+TODO: Setup ai model and geode mod (mac only)
 
 ## Data Pipeline
 
