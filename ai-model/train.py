@@ -68,7 +68,7 @@ def build_state(transform):
     stacked = torch.cat(processed, dim=0).unsqueeze(0)
     return stacked
 
-def train(num_episodes=50000, max_steps=10000, resume=True):
+def train(num_episodes=50000, max_steps=5000, resume=True):
     env   = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
     model = DQNModel().to(device)
@@ -101,7 +101,7 @@ def train(num_episodes=50000, max_steps=10000, resume=True):
     total_steps = 0
 
     for ep in range(start_ep, num_episodes):
-        pct = random.randint(1, 80) if config.RANDOM_SPAWN else 1
+        pct = random.randint(1, 90) if config.RANDOM_SPAWN else 1
         env.reset(pct)
 
         start_time = time.time()
