@@ -68,7 +68,7 @@ def build_state(transform):
     stacked = torch.cat(processed, dim=0).unsqueeze(0)
     return stacked
 
-def train(num_episodes=50000, max_steps=5000, resume=True):
+def train(num_episodes=50000, max_steps=5000, resume=False):
     env   = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
     model = DQNModel().to(device)
@@ -78,6 +78,8 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
     start_ep = 0
     best_percent = 0    
     time_alive_per_ep = {}
+    epsilon_per_ep = {}
+    reward_per_ep = {}
 
     # resume
     if resume and os.path.exists("checkpoints/latest.pt"):
@@ -87,7 +89,10 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
         agent.optimizer.load_state_dict(cp["optimizer_state"])
         start_ep = cp["episode"] + 1
         time_alive_per_ep = cp.get("time_alive", {})
-        agent.epsilon = config.EPSILON_START * (config.EPSILON_DECAY ** (start_ep * 20)) # TODO: A hack to step epsilon (assume about 20 steps per episode)
+        reward_per_ep = cp.get("total_reward", {})
+        epsilon_per_ep = cp.get("epsilon", {})
+        agent.epsilon = epsilon_per_ep[len(epsilon_per_ep)-1]
+        # agent.epsilon = config.EPSILON_START * (config.EPSILON_DECAY ** (start_ep * 20)) # TODO: A hack to step epsilon (assume about 20 steps per episode)
         print(f"Resumed at episode {start_ep}")
 
     transform = v2.Compose([
@@ -153,6 +158,8 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
         end_time = time.time()
         time_alive = end_time - start_time
         time_alive_per_ep[ep] = time_alive  # save for this ep
+        epsilon_per_ep[ep] = agent.epsilon
+        reward_per_ep[ep] = total_r
 
         print(f"Ep {ep+1} → reward {total_r:.1f}")
 
@@ -162,6 +169,8 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
                 "model_state": agent.model.state_dict(),
                 "optimizer_state": agent.optimizer.state_dict(),
                 "time_alive": time_alive_per_ep,
+                "total_reward": reward_per_ep,
+                "epsilon":epsilon_per_ep,
             }, f"checkpoints/{ep+1}.pt")
             # torch.save(agent.replay_buffer,f"checkpoints/replay_buffer_ep{ep}.pt")
             print(f"Saved checkpoint @ ep {ep+1}")
@@ -171,6 +180,8 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
             "model_state": agent.model.state_dict(),
             "optimizer_state": agent.optimizer.state_dict(),
             "time_alive": time_alive_per_ep,
+            "total_reward": reward_per_ep,
+            "epsilon":epsilon_per_ep,
         }, f"checkpoints/latest.pt")
 
     env.close()

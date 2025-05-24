@@ -20,7 +20,7 @@ class Agent:
         self.target_model = type(model)().to(self.device)
         self.target_model.load_state_dict(model.state_dict())
 
-        self.optimizer = torch.optim.Adam(model.parameters(), lr=LR)
+        self.optimizer = torch.optim.AdamW(model.parameters(), lr=LR)
         self.criterion = nn.MSELoss()
 
         self.gamma = GAMMA
