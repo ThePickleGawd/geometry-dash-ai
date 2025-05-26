@@ -162,6 +162,12 @@ class $modify(MyPlayLayer, PlayLayer)
 
 		delete[] buffer;
 	}
+
+	void levelComplete()
+	{
+		// Don't show menu or anything, just reset the level
+		controls::resetLevel();
+	}
 };
 
 // ============== Debugging w/ keyboard ==============
