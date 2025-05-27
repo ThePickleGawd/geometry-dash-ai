@@ -9,7 +9,7 @@ from torchvision.transforms import v2
 from tqdm import tqdm
 import cv2
 
-from geometry_dash_gym.envs import GeometryDashEnv
+from gym import GeometryDashEnv
 from tcp import gdclient
 from model import DQNModel, DUEL_DQNModel
 from agent import Agent
@@ -91,8 +91,8 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
         time_alive_per_ep = cp.get("time_alive", {})
         reward_per_ep = cp.get("total_reward", {})
         epsilon_per_ep = cp.get("epsilon", {})
-        agent.epsilon = epsilon_per_ep[len(epsilon_per_ep)-1]
-        # agent.epsilon = config.EPSILON_START * (config.EPSILON_DECAY ** (start_ep * 20)) # TODO: A hack to step epsilon (assume about 20 steps per episode)
+        # agent.epsilon = epsilon_per_ep[len(epsilon_per_ep)-1]
+        agent.epsilon = config.EPSILON_START * (config.EPSILON_DECAY ** (start_ep * 20)) # TODO: A hack to step epsilon (assume about 20 steps per episode)
         print(f"Resumed at episode {start_ep}")
 
     transform = v2.Compose([

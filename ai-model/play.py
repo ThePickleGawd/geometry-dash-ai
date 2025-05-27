@@ -9,7 +9,7 @@ from torchvision.transforms import v2
 from tqdm import tqdm
 import cv2
 
-from geometry_dash_gym.envs import GeometryDashEnv
+from gym import GeometryDashEnv
 from tcp import gdclient
 from model import DQNModel
 from agent import Agent

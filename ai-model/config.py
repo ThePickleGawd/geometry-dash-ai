@@ -17,7 +17,7 @@ BASE_URL = "127.0.0.1"
 
 # Train settings
 SAVE_EPOCH = 500
-RANDOM_SPAWN = False
+RANDOM_SPAWN = True
 SET_SPAWN = 1
 
 # Hyperparameters

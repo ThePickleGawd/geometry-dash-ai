@@ -1,2 +1,0 @@
-from geometry_dash_gym.envs.grid_world import GridWorldEnv
-from geometry_dash_gym.envs.geometry_dash import GeometryDashEnv
