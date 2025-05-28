@@ -68,7 +68,7 @@ def build_state(transform):
     stacked = torch.cat(processed, dim=0).unsqueeze(0)
     return stacked
 
-def train(num_episodes=50000, max_steps=5000, resume=False):
+def train(num_episodes=50000, max_steps=5000, resume=True):
     env   = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
     model = DeeperDQNModel().to(device)
@@ -107,7 +107,17 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
     total_steps = 0
 
     for ep in range(start_ep, num_episodes):
-        pct = random.randint(1, 90) if config.RANDOM_SPAWN else config.SET_SPAWN
+        #cube 1,29 47,86
+        #ship 30,46 86,98
+        
+        if random.random() < config.RANDOM_SPAWN_PERCENTAGE:
+            pct = random.randint(1,90)
+            #Cube only Random Spawn Below
+            # pct = random.randint(1, 80-(47-29))
+            # if pct>29:
+            #     pct = pct+(47-29)
+        else:
+            pct = config.SET_SPAWN
         env.reset(pct)
 
         start_time = time.time()
@@ -132,7 +142,7 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
                 cv2.waitKey(1)
 
             # Simulate
-            _, reward, done, info = env.step(action)
+            _, reward, done, info = env.step(action,start_percent=pct)
             total_r += reward
             pbar.set_postfix(r=round(total_r, 2), lvl_percent=round(info["percent"], 1))
 
