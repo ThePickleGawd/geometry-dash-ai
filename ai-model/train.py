@@ -11,7 +11,7 @@ import cv2
 
 from gym import GeometryDashEnv
 from tcp import gdclient
-from model import DQNModel, DUEL_DQNModel
+from model import DQNModel, DUEL_DQNModel, DeeperDQNModel
 from agent import Agent
 import config
 import random
@@ -71,7 +71,7 @@ def build_state(transform):
 def train(num_episodes=50000, max_steps=5000, resume=False):
     env   = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
-    model = DQNModel().to(device)
+    model = DeeperDQNModel().to(device)
     # model = DUEL_DQNModel().to(device)
     agent = Agent(model)
 
@@ -191,4 +191,4 @@ if __name__ == "__main__":
     start_geometry_dash()
     gdclient.connect()
     Thread(target=listen_for_frame_buffer, daemon=True).start()
-    train(resume=True)
+    train(resume=False)
