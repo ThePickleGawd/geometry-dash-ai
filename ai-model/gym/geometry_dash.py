@@ -24,7 +24,7 @@ class GeometryDashEnv(gym.Env):
         self.holding = False
         self.prePercent = 0
 
-    def step(self, action):
+    def step(self, action, start_percent=1):
         # INFO contains if dead and the percentage
         info = gdclient.send_command("step" + (" hold" if action==1 else ""))
         if "error" in info:
@@ -34,6 +34,8 @@ class GeometryDashEnv(gym.Env):
         done = info["dead"]
         observation = None # Observation handled by tcp client
         reward = config.DEFAULT_REWARD
+        #Squared reward of percent done
+        # reward = config.DEFAULT_REWARD + (info['percent']-start_percent)**2
         if (action==1):
             reward = config.JUMP_PUNISHMENT
         if (info['percent'] > self.prePercent and (info['percent']%3) < (self.prePercent%3)):
@@ -41,6 +43,16 @@ class GeometryDashEnv(gym.Env):
 
         if done:
             reward = config.DEATH_PUNISHMENT
+
+        #Code for skipping ship
+        # if (info['percent']>28 and info['percent']<46):
+        #     reward += config.BEATING_LEVEL/2
+        #     self.reset(47)
+        
+        # if (info['percent']>87):
+        #     done = True
+        #     reward += config.BEATING_LEVEL
+
 
         self.prePercent = info['percent']
         return observation, reward, done, info
