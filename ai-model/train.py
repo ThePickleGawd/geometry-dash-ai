@@ -68,7 +68,7 @@ def build_state(transform):
     stacked = torch.cat(processed, dim=0).unsqueeze(0)
     return stacked
 
-def train(num_episodes=50000, max_steps=5000, resume=True):
+def train(num_episodes=50000, max_steps=5000, resume=False):
     env   = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
     model = DeeperDQNModelv2().to(device)

@@ -2,6 +2,7 @@
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/PlayerObject.hpp>
 #include <Geode/modify/CCKeyboardDispatcher.hpp>
+#include <Geode/modify/CCScheduler.hpp>
 #include <Geode/modify/AppDelegate.hpp>
 #include "utils/controls.hpp"
 #include <OpenGL/gl.h>
@@ -12,6 +13,20 @@
 #include <string_view>
 
 using namespace geode::prelude;
+
+// ============== Speed Hack ==============
+float SPEED_MULTIPLIER = 2.0f;
+
+class $modify(SchedulerSpeedHack, CCScheduler) {
+    void update(float dt) override {
+        // Only scale dt if PlayLayer is active (in a level)
+        if (PlayLayer::get()) {
+            CCScheduler::update(dt * SPEED_MULTIPLIER);
+        } else {
+            CCScheduler::update(dt);
+        }
+    }
+};
 
 // ============== Entry Point ==============
 std::string getSourceDir()
