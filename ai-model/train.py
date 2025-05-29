@@ -11,7 +11,7 @@ import cv2
 
 from gym import GeometryDashEnv
 from tcp import gdclient
-from model import DQNModel, DUEL_DQNModel, DeeperDQNModel
+from model import DQNModel, DUEL_DQNModel, DeeperDQNModel, DeeperDQNModelv2
 from agent import Agent
 import config
 import random
@@ -71,7 +71,7 @@ def build_state(transform):
 def train(num_episodes=50000, max_steps=5000, resume=True):
     env   = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
-    model = DeeperDQNModel().to(device)
+    model = DeeperDQNModelv2().to(device)
     # model = DUEL_DQNModel().to(device)
     agent = Agent(model)
 
@@ -126,7 +126,10 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
         # Init state
         state = build_state(transform)
         
+        previous_steps = total_steps
         pbar = tqdm(range(max_steps), desc=f"Ep{ep+1}")
+        
+        stupid_death = False
         for step in pbar:
             # Get predicted action
             action = agent.act(state)
@@ -148,8 +151,11 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
 
             # Get resutling state and train
             next_state = build_state(transform)
+            if step==0 and done == True:
+                stupid_death = True
+                break
             agent.remember(state, action, reward, next_state, done)
-            agent.train()
+            # agent.train() #if u want uncomment this, comment out line 184 for the batched
 
             state = next_state
             if info['percent']>best_percent:
@@ -164,7 +170,9 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
                 print(f"Died at step {step}.")
                 agent.save_death_replay()
                 break
-        
+        if stupid_death:
+            print('stupid death')
+            continue
         end_time = time.time()
         time_alive = end_time - start_time
         time_alive_per_ep[ep] = time_alive  # save for this ep
@@ -172,6 +180,11 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
         reward_per_ep[ep] = total_r
 
         print(f"Ep {ep+1} → reward {total_r:.1f}")
+
+        #batched training at the end of att
+        for _ in range(total_steps-previous_steps):
+            agent.train()
+
 
         if (ep + 1) % config.SAVE_EPOCH == 0:
             torch.save({
@@ -201,4 +214,4 @@ if __name__ == "__main__":
     start_geometry_dash()
     gdclient.connect()
     Thread(target=listen_for_frame_buffer, daemon=True).start()
-    train(resume=False)
+    train(resume=True)
