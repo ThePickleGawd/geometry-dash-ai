@@ -71,11 +71,11 @@ class Agent:
         dones = torch.tensor(dones).float().to(self.device)
 
         curr_q = self.model(states).gather(1, actions).squeeze()
-        next_q = self.target_model(next_states).max(1)[0].detach()
+        # next_q = self.target_model(next_states).max(1)[0].detach()
 
         #FOR DUELING DQN !
-        # next_actions = self.model(next_states).argmax(1, keepdim = True)
-        # next_q = self.target_model(next_states).gather(1, next_actions).squeeze().detach()
+        next_actions = self.model(next_states).argmax(1, keepdim = True)
+        next_q = self.target_model(next_states).gather(1, next_actions).squeeze().detach()
 
         expected_q = rewards + self.gamma * next_q * (1 - dones)
         

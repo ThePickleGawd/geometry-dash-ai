@@ -15,7 +15,7 @@
 using namespace geode::prelude;
 
 // ============== Speed Hack ==============
-float SPEED_MULTIPLIER = 2.0f;
+float SPEED_MULTIPLIER = 1.0f;
 
 class $modify(SchedulerSpeedHack, CCScheduler) {
     void update(float dt) override {

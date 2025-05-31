@@ -11,7 +11,7 @@ import cv2
 
 from gym import GeometryDashEnv
 from tcp import gdclient
-from model import DQNModel, DUEL_DQNModel, DeeperDQNModel, DeeperDQNModelv2
+from model import DQNModel, DUEL_DQNModel, DeeperDQNModel, DeeperDQNModelv2, NoisyDeeperDQNModelv2
 from agent import Agent
 import config
 import random
@@ -71,6 +71,7 @@ def build_state(transform):
 def train(num_episodes=50000, max_steps=5000, resume=False):
     env   = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
+    # model = NoisyDeeperDQNModelv2().to(device)
     model = DeeperDQNModelv2().to(device)
     # model = DUEL_DQNModel().to(device)
     agent = Agent(model)
@@ -91,8 +92,8 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
         time_alive_per_ep = cp.get("time_alive", {})
         reward_per_ep = cp.get("total_reward", {})
         epsilon_per_ep = cp.get("epsilon", {})
-        # agent.epsilon = epsilon_per_ep[len(epsilon_per_ep)-1]
-        agent.epsilon = config.EPSILON_START * (config.EPSILON_DECAY ** (start_ep * 20)) # TODO: A hack to step epsilon (assume about 20 steps per episode)
+        agent.epsilon = epsilon_per_ep[start_ep-1]
+        # agent.epsilon = config.EPSILON_START * (config.EPSILON_DECAY ** (start_ep * 20)) # TODO: A hack to step epsilon (assume about 20 steps per episode)
         print(f"Resumed at episode {start_ep}")
 
     transform = v2.Compose([
@@ -185,6 +186,9 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
         for _ in range(total_steps-previous_steps):
             agent.train()
 
+        #USE IF DOING NOISYNET
+        # agent.model.reset_noise()
+        # agent.target_model.reset_noise()
 
         if (ep + 1) % config.SAVE_EPOCH == 0:
             torch.save({
