@@ -51,12 +51,11 @@ class AgentExperts:
     def remember(self, state, action, reward, next_state, is_ship, done):
         self.replay_buffer.append((state, action, reward, next_state, is_ship, done))
 
-    # def save_death_replay(self):
-    #     # Must be called on death. Will save the last few frames. Ignore frames right when we die
-    #     last_5 = list(self.replay_buffer)[-20:-10]
-    #     for t in last_5:
-    #         self.death_replay_buffer.append(t)
-
+    def save_death_replay(self):
+        # Must be called on death. Will save the last few frames. Ignore frames right when we die
+        last_5 = list(self.replay_buffer)[-20:-10]
+        for t in last_5:
+            self.death_replay_buffer.append(t)
 
     def train(self):
         if len(self.replay_buffer) < self.batch_size:
@@ -79,6 +78,7 @@ class AgentExperts:
 
         pred_actions_q, pred_is_ships = self.model(states, is_ships)
         next_actions_q, _ = self.target_model(next_states, is_ships) # Assuming is ships doesn't change
+        pred_is_ships = pred_is_ships.squeeze(-1)
 
         curr_q = pred_actions_q.gather(1, actions).squeeze() # Get the right q pred
         next_q = next_actions_q.max(1)[0].detach() # Get the best next q
