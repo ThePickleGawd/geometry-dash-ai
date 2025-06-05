@@ -45,7 +45,7 @@ class AgentExperts:
         if random.random() < self.epsilon:
             return random.randint(0, self.action_dim - 1)
         with torch.no_grad():
-            q_values, _ = self.model(state.to(self.device), torch.tensor([is_ship]))
+            q_values, _ = self.model(state.to(self.device), torch.tensor([is_ship], device=self.device))
         return q_values.argmax().item()
 
     def remember(self, state, action, reward, next_state, is_ship, done):

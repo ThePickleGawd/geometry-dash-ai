@@ -71,7 +71,7 @@ def build_state(transform):
 def train(num_episodes=50000, max_steps=5000, resume=True):
     env   = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
-    model = ExpertsModel().to(device)
+    model = ExpertsModel(is_train=True).to(device)
     agent = AgentExperts(model)
 
     start_ep = 0

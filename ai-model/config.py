@@ -20,7 +20,7 @@ FRAME_PORT = 22223 # Receives frame buffer
 BASE_URL = "127.0.0.1"
 
 # Train settings
-SAVE_EPOCH = 100
+SAVE_EPOCH = 500
 RANDOM_SPAWN_PERCENTAGE = 0.8
 SET_SPAWN = 1
 
