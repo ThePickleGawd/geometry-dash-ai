@@ -3,6 +3,9 @@
 #include <Geode/modify/PlayerObject.hpp>
 #include <Geode/modify/CCKeyboardDispatcher.hpp>
 #include <Geode/modify/CCScheduler.hpp>
+#include <Geode/modify/GJBaseGameLayer.hpp>
+// #include <Geode/cocos/CCScheduler.h>
+#include <Geode/modify/CCDirector.hpp>
 #include <Geode/modify/AppDelegate.hpp>
 #include "utils/controls.hpp"
 #include <OpenGL/gl.h>
@@ -11,22 +14,24 @@
 #include "utils/safe_states.hpp"
 #include <filesystem>
 #include <string_view>
+#include <Geode/modify/GameManager.hpp>
 
 using namespace geode::prelude;
 
 // ============== Speed Hack ==============
 float SPEED_MULTIPLIER = 1.0f;
 
-class $modify(SchedulerSpeedHack, CCScheduler) {
-    void update(float dt) override {
-        // Only scale dt if PlayLayer is active (in a level)
-        if (PlayLayer::get()) {
-            CCScheduler::update(dt * SPEED_MULTIPLIER);
-        } else {
-            CCScheduler::update(dt);
-        }
-    }
-};
+// class $modify(SchedulerSpeedHack, CCScheduler) {
+//     void update(float dt) override {
+//         // Only scale dt if PlayLayer is active (in a level)
+//         if (PlayLayer::get()) {
+// 			CCScheduler::setTimeScale(SPEED_MULTIPLIER);
+//             CCScheduler::update(dt * 1);
+//         } else {
+//             CCScheduler::update(dt);
+//         }
+//     }
+// };
 
 // ============== Entry Point ==============
 std::string getSourceDir()
@@ -40,6 +45,17 @@ $on_mod(Loaded)
 {
 	log::info("Mod loaded, let's setup tcp server");
 	tcpserver::start();
+
+    const float fpsCap = 60.0f * SPEED_MULTIPLIER;
+
+    auto director = cocos2d::CCDirector::sharedDirector();
+    if (director != nullptr) {
+        log::info("Setting FPS cap to {}", fpsCap);
+        director->setAnimationInterval(1.0f / fpsCap);
+    } else {
+        log::warn("CCDirector not yet available!");
+    }
+
 }
 
 // ============== Stop Game from Pausing ==============
@@ -56,6 +72,24 @@ class $modify(AppDelegate)
 	}
 };
 
+class $modify(MyGameManager, GameManager) {
+    ccColor3B colorForIdx(int colorIdx, bool isSecondary) {
+        // Always return a custom color, e.g., bright red
+        return ccColor3B{0, 0, 0};
+    }
+};
+class $modify(MyPlayerObject, PlayerObject) {
+    void setColor(const ccColor3B& color) {
+        // Force the color to bright red
+        PlayerObject::setColor({0, 0, 0});
+    }
+
+    void setSecondColor(const ccColor3B& color) {
+        // Optionally override secondary color too (e.g., dark red)
+        PlayerObject::setSecondColor({0, 0, 0});
+    }
+};
+
 // ============== Overload jump request ==============
 // class $modify(RLPlayerObject, PlayerObject)
 // {
@@ -65,6 +99,12 @@ class $modify(AppDelegate)
 // 		return PlayerObject::pushButton(btn);
 // 	}
 // };
+
+struct $modify(MyGameSpeedFix, GJBaseGameLayer) {
+    void update(float dt) {
+        GJBaseGameLayer::update(dt / SPEED_MULTIPLIER);
+    }
+};
 
 // ============== Main Game Loop ==============
 class $modify(MyPlayLayer, PlayLayer)
@@ -82,7 +122,6 @@ class $modify(MyPlayLayer, PlayLayer)
 	bool init(GJGameLevel *level, bool p1, bool p2)
 	{
 		log::info("Level started");
-
 		if (m_fields->loadStates)
 		{
 			std::string path = getSourceDir() + "/safe_states/stereo_madness_states.txt";

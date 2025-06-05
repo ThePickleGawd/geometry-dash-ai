@@ -92,8 +92,8 @@ class Agent:
         # next_q = self.target_model(next_states).max(1)[0].detach()
 
         #FOR DUELING(double?) DQN !
-        next_actions = self.model(next_states, actions).argmax(1, keepdim = True)
-        next_q = self.target_model(next_states, actions).gather(1, next_actions).squeeze().detach()
+        next_actions = self.model(next_states).argmax(1, keepdim = True)
+        next_q = self.target_model(next_states).gather(1, next_actions).squeeze().detach()
 
 
         # expected_q = rewards + (self.gamma**config.NSTEP) * next_q * (1 - dones)
