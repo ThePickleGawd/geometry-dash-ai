@@ -12,7 +12,7 @@ import cv2
 from gym import GeometryDashEnv
 from tcp import gdclient
 from model import DQNModel, DUEL_DQNModel, DeeperDQNModel, DeeperDQNModelv2, NoisyDeeperDQNModelv2, smallDQN, ActionDeeperDQNModelv2
-from agent import Agent
+from agent import Agent, AgentACTION
 import config
 import random
 import math
@@ -76,14 +76,15 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
     model = ActionDeeperDQNModelv2().to(device)
     # model = DUEL_DQNModel().to(device)
     # model = smallDQN().to(device)
-    agent = Agent(model)
+    agent = AgentACTION(model)
 
     start_ep = 0 
     time_alive_per_ep = {}
     epsilon_per_ep = {}
     reward_per_ep = {}
     best_time = 0
-    previous_action = torch.unsqueeze(torch.zeros(2),0)
+    if config.PREVIOUS_ACTION:
+        previous_action = torch.unsqueeze(torch.zeros(2),0)
 
     # resume
     if resume and os.path.exists("checkpoints/latest.pt"):
@@ -149,9 +150,13 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
             #     totalvisits += env.percentCount[i][int(previous_percent)]
             
             # Get predicted action
-            action = agent.act(state,previous_action)
-            if action==1: previous_action = torch.unsqueeze(torch.Tensor([0,1]),0)
-            else:         previous_action = torch.unsqueeze(torch.Tensor([1,0]),0)
+            if config.PREVIOUS_ACTION:
+                action = agent.act(state,previous_action)
+                if action==1: previous_action = torch.unsqueeze(torch.Tensor([0,1]),0)
+                else:         previous_action = torch.unsqueeze(torch.Tensor([1,0]),0)
+            else:
+                action = agent.act(state)
+
 
             img = state[0, -1]  # take the most recent frame (C, H, W)
 
@@ -174,7 +179,9 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
                 stupid_death = True
                 break
             #CHANGED to clip reward
-            agent.remember(state, action, min(max(reward,-1),1), next_state, done,previous_action)
+            if config.PREVIOUS_ACTION:
+                agent.remember(state, action, min(max(reward,-1),1), next_state, done,previous_action)
+            else: agent.remember(state, action, min(max(reward,-1),1), next_state, done)
             #for NEWSTATE
             # memory.append([state, action, reward, next_state, done])
             
@@ -194,7 +201,7 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
             
             if done:
                 print(f"Died at step {step}.")
-                agent.save_death_replay()
+                # agent.save_death_replay()
                 break
         if stupid_death:
             print('stupid death')
