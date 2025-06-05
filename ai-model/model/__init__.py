@@ -5,3 +5,5 @@ from model.deeperdqn import DeeperDQNModelv2
 from model.NoisyNet import NoisyLinear
 from model.NoisyNet import LazyNoisyLinear
 from model.deeperdqn import NoisyDeeperDQNModelv2
+from model.deeperdqn import smallDQN
+from model.deeperdqn import ActionDeeperDQNModelv2
