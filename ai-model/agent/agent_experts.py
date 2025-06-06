@@ -28,7 +28,7 @@ class AgentExperts:
         self.optimizer = torch.optim.AdamW(model.parameters(), lr=LR)
         self.criterion = nn.MSELoss()
         self.criterion_ship_classify = nn.BCELoss()
-        self.cls_lambda = 0.2 # How much to weight classification loss
+        self.cls_lambda = 0.05 # How much to weight classification loss
 
         self.gamma = GAMMA
         self.epsilon = EPSILON_START
