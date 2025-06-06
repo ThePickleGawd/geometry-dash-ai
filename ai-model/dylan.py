@@ -124,8 +124,10 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
         info = { "percent": pct }
         is_ship = False
         for step in pbar:
-            # Dumb way of checking if ship
+            # Dumb way of checking if not ship
             if info['percent'] < 86 and not (info['percent'] > 30 and info['percent'] < 46.79):
+                is_ship = False
+            else:
                 is_ship = True
 
             # Get predicted action
@@ -200,4 +202,4 @@ if __name__ == "__main__":
     start_geometry_dash()
     gdclient.connect()
     Thread(target=listen_for_frame_buffer, daemon=True).start()
-    train(resume=False)
+    train(resume=True)
