@@ -6,6 +6,7 @@ import numpy as np
 from collections import deque
 import math
 import config
+import cv2
 from model.dqnexperts import ExpertsModel
 
 from config import (
@@ -28,16 +29,15 @@ class AgentExperts:
         self.optimizer = torch.optim.AdamW(model.parameters(), lr=LR)
         self.criterion = nn.MSELoss()
         self.criterion_ship_classify = nn.BCELoss()
-        self.cls_lambda = 0.05 # How much to weight classification loss
+        self.cls_lambda = 0.1 # How much to weight classification loss
 
         self.gamma = GAMMA
         self.epsilon = EPSILON_START
         self.epsilon_decay = EPSILON_DECAY
         self.epsilon_min = EPSILON_MIN
 
-        self.temp_nstep_buffer = deque(maxlen=config.NSTEP)
+        self.death_replay_buffer = deque(maxlen=config.NSTEP)
         self.replay_buffer = deque(maxlen=BUFFER_SIZE)
-        self.batch_size = BATCH_SIZE
 
     def act(self, state, is_ship):
         state = state.to(self.device)
@@ -51,21 +51,36 @@ class AgentExperts:
     def remember(self, state, action, reward, next_state, is_ship, done):
         self.replay_buffer.append((state, action, reward, next_state, is_ship, done))
 
-    def save_death_replay(self):
-        # Must be called on death. Will save the last few frames. Ignore frames right when we die
-        last_5 = list(self.replay_buffer)[-20:-10]
-        for t in last_5:
-            self.death_replay_buffer.append(t)
-
-    def train(self):
-        if len(self.replay_buffer) < self.batch_size:
+    def on_death(self):
+        if len(self.replay_buffer) < 5:
             return
 
-        batch = random.sample(self.replay_buffer, self.batch_size)
+        # Set the last 5 frames to death penalty
+        last_reward = self.replay_buffer[-1][2]
+        for i in range(-5, 0):
+            s, a, _, ns, is_ship, d = self.replay_buffer[i]
+            self.replay_buffer[i] = (s, a, last_reward, ns, is_ship, d)
+
+        # Save 5th to last in buffer
+        self.death_replay_buffer.append(self.replay_buffer[-3])
+
+        # Visualize the death frame we saved
+        # img = self.death_replay_buffer[-1][0][0, -1]  # take the most recent frame (C, H, W)
+        # img_np = img.permute(1, 2, 0).cpu().numpy()  # CHW → HWC
+        # img_np = (img_np * 255).astype('uint8')      # scale to [0, 255] if float32
+
+        # cv2.imshow("test", img_np)
+        # cv2.waitKey(0)
+
+    def train(self):
+        if len(self.replay_buffer) < BATCH_SIZE:
+            return
+
+        batch = random.sample(self.replay_buffer, BATCH_SIZE)
 
         # We want to enforce some death memories
-        # if len(self.death_replay_buffer) > self.death_batch_size:
-        #     batch.extend(random.sample(self.death_replay_buffer, self.death_batch_size))
+        if len(self.death_replay_buffer) > DEATH_BATCH_SIZE:
+            batch.extend(random.sample(self.death_replay_buffer, DEATH_BATCH_SIZE))
 
         states, actions, rewards, next_states, is_ships, dones = zip(*batch)
 
@@ -79,6 +94,11 @@ class AgentExperts:
         pred_actions_q, pred_is_ships = self.model(states, is_ships)
         next_actions_q, _ = self.target_model(next_states, is_ships) # Assuming is ships doesn't change
         pred_is_ships = pred_is_ships.squeeze(-1)
+
+        # Print accuracy
+        # pred_labels = (pred_is_ships > 0.5).float()  # or .int() if is_ships is int
+        # correct = torch.count_nonzero(pred_labels == is_ships)
+        # print(f"Is ship: {correct}/{pred_labels.shape[0]} Accuracy: {correct / pred_labels.shape[0]:.2f}")
 
         curr_q = pred_actions_q.gather(1, actions).squeeze() # Get the right q pred
         next_q = next_actions_q.max(1)[0].detach() # Get the best next q

@@ -53,6 +53,7 @@ class GeometryDashEnv(gym.Env):
 
         if done:
             reward = config.DEATH_PUNISHMENT
+            print("died")
 
         #for NEWSTATE
         # totalvisits= 0

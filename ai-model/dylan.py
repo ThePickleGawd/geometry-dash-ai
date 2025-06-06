@@ -108,10 +108,19 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
         #cube 1,29 47,86
         #ship 30,46 86,98
         
-        if random.random() < config.RANDOM_SPAWN_PERCENTAGE:
-            pct = random.randint(1,90)
+        r = random.random()
+        if r < config.SHIP_SPAWN_PERCENTAGE:
+            # Ship section: 30 < pct < 46.79
+            pct = random.uniform(30.01, 46.78)
+        elif r < config.SHIP_SPAWN_PERCENTAGE + config.START_SPAWN_PERCENTAGE:
+            pct = config.SET_SPAWN  # Start spawn
         else:
-            pct = config.SET_SPAWN
+            # Random non-ship: < 30 or > 46.79 up to 86
+            while True:
+                pct = random.randint(1, 90)
+                if pct < 30 or pct > 46.79:
+                    break
+
         env.reset(pct)
 
         start_time = time.time()
@@ -164,7 +173,7 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
             
             if done:
                 print(f"Died at step {step}.")
-                # agent.save_death_replay()
+                agent.on_death()
                 break
         
         end_time = time.time()
