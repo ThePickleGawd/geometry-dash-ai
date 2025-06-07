@@ -86,6 +86,7 @@ class $modify(MyPlayLayer, PlayLayer)
 		if (m_fields->loadStates)
 		{
 			std::string path = getSourceDir() + "/safe_states/stereo_madness_states.txt";
+			// std::string path = getSourceDir() + "/safe_states/test.txt";
 			loadSafeStatesFromFile(path);
 			log::info("Safe state map size: {}", g_safeStateMap.size());
 		}
