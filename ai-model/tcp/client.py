@@ -52,7 +52,12 @@ class GDClient:
             return None
 
         img = np.frombuffer(image_data, dtype=np.uint8).reshape((height, width, 4))
-        gray = cv2.cvtColor(img, cv2.COLOR_RGBA2GRAY)
+        
+        #HSV
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        gray = hsv[:, :, 2]
+        
+        # gray = cv2.cvtColor(img, cv2.COLOR_RGBA2GRAY)
         gray_small = cv2.resize(gray, (gray.shape[1] // 2, gray.shape[0] // 2), interpolation=cv2.INTER_AREA)
         return gray_small
 

@@ -124,3 +124,70 @@ class NoisyDeeperDQNModelv2(nn.Module):
     def reset_noise(self):
         self.lazynoise.reset_noise()
         self.noise.reset_noise()
+        
+class smallDQN(nn.Module):
+    def __init__(self, in_channels=COLOR_CHANNELS, stack_size=FRAME_STACK_SIZE, num_actions=2):
+        super().__init__()
+
+        self.conv = nn.Sequential(
+            nn.Conv2d(in_channels * stack_size, 16, kernel_size=8, stride=4),  # input: [B, C*T, H, W]
+            nn.SiLU(),
+            nn.Conv2d(16, 32, kernel_size=4, stride=2),
+            nn.SiLU(),
+            nn.Conv2d(32, 32, kernel_size=3, stride=2),
+            nn.SiLU(),
+        )
+
+        self.fc = nn.Sequential(
+            nn.Flatten(),
+            nn.LazyLinear(256),
+            nn.SiLU(),
+            nn.Linear(256, num_actions)
+        )
+
+    def forward(self, x):
+        """
+        Batch, Time frame, color channels, Height , width
+        x: (B, T, C, H, W) -> reshape to (B, T*C, H, W)
+        """
+        B, T, C, H, W = x.shape
+        x = x.view(B, T * C, H, W)
+        x = self.conv(x)
+        x = self.fc(x)
+        return x
+
+
+class ActionDeeperDQNModelv2(nn.Module):
+    def __init__(self, in_channels=COLOR_CHANNELS, stack_size=FRAME_STACK_SIZE, num_actions=2):
+        super().__init__()
+
+        self.conv = nn.Sequential(
+            nn.Conv2d(in_channels * stack_size, 48, kernel_size=8, stride=4),  # input: [B, C*T, H, W]
+            nn.SiLU(),
+            nn.Conv2d(48,64, kernel_size=4, stride=2),
+            nn.SiLU(),
+            nn.Conv2d(64, 64, kernel_size=4, stride=2),
+            nn.SiLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=2),
+            nn.SiLU(),
+        )
+
+        self.fc = nn.Sequential(
+            nn.Identity(),
+            nn.LazyLinear(512),
+            nn.SiLU(),
+            nn.Linear(512, num_actions)
+        )
+
+    def forward(self, x, action):
+        """
+        Batch, Time frame, color channels, Height , width
+        x: (B, T, C, H, W) -> reshape to (B, T*C, H, W)
+        """
+        B, T, C, H, W = x.shape
+        x = x.view(B, T * C, H, W)
+        x = self.conv(x)
+        x = torch.flatten(x,start_dim=1)
+        x = torch.concat((x,action),dim=1)
+        x = self.fc(x)
+        return x

@@ -13,7 +13,7 @@ from config import (
     BUFFER_SIZE, BATCH_SIZE, DEATH_BATCH_SIZE
 )
 
-class Agent:
+class AgentACTION:
     def __init__(self, model, start_ep=0):
         self.action_dim = ACTION_DIM
         
@@ -36,17 +36,17 @@ class Agent:
         self.batch_size = BATCH_SIZE
         # self.death_batch_size = DEATH_BATCH_SIZE
 
-    def act(self, state):
+    def act(self, state, action):
         state = state.to(self.device)
 
         if random.random() < self.epsilon:
             return random.randint(0, self.action_dim - 1)
         with torch.no_grad():
-            q_values = self.model(state.to(self.device))
+            q_values = self.model(state.to(self.device),action.to(self.device))
         return q_values.argmax().item()
 
-    def remember(self, state, action, reward, next_state, done):
-        self.replay_buffer.append((state, action, reward, next_state, done))
+    def remember(self, state, action, reward, next_state, done, preaction = torch.zeros(2)):
+        self.replay_buffer.append((state, action, reward, next_state, done,preaction))
         
         #NSTEP BUFFER CODE
         # self.temp_nstep_buffer.append((state, action, reward, next_state, done,preaction))
@@ -80,20 +80,27 @@ class Agent:
         # if len(self.death_replay_buffer) > self.death_batch_size:
         #     batch.extend(random.sample(self.death_replay_buffer, self.death_batch_size))
 
-        states, actions, rewards, next_states, dones = zip(*batch)
+        states, actions, rewards, next_states, dones, preactions = zip(*batch)
 
         states = torch.cat(states, dim=0).float().to(self.device)
         next_states = torch.cat(next_states, dim=0).float().to(self.device)
         actions = torch.tensor(actions).long().unsqueeze(1).to(self.device)
         rewards = torch.tensor(rewards).float().to(self.device)
         dones = torch.tensor(dones).float().to(self.device)
+        preactions = torch.stack(preactions).to(self.device)
+        preactions = torch.squeeze(preactions,1)
+        tensor_actions = []
+        for act in actions:
+            if act==1: tensor_actions.append([0,1])
+            else:      tensor_actions.append([1,0])
+        tensor_actions = torch.tensor(tensor_actions).float().to(self.device)
 
-        curr_q = self.model(states).gather(1, actions).squeeze()
+        curr_q = self.model(states, preactions).gather(1, actions).squeeze()
         # next_q = self.target_model(next_states).max(1)[0].detach()
 
         #FOR DUELING(double?) DQN !
-        next_actions = self.model(next_states).argmax(1, keepdim = True)
-        next_q = self.target_model(next_states).gather(1, next_actions).squeeze().detach()
+        next_actions = self.model(next_states, tensor_actions).argmax(1, keepdim = True)
+        next_q = self.target_model(next_states, tensor_actions).gather(1, next_actions).squeeze().detach()
 
 
         # expected_q = rewards + (self.gamma**config.NSTEP) * next_q * (1 - dones)
