@@ -125,6 +125,7 @@ class $modify(MyPlayLayer, PlayLayer)
 		if (m_fields->loadStates)
 		{
 			std::string path = getSourceDir() + "/safe_states/stereo_madness_states.txt";
+			// std::string path = getSourceDir() + "/safe_states/test.txt";
 			loadSafeStatesFromFile(path);
 			log::info("Safe state map size: {}", g_safeStateMap.size());
 		}
@@ -178,7 +179,13 @@ class $modify(MyPlayLayer, PlayLayer)
 			int int_percent = static_cast<int>(percent);
 
 			float currentY = m_player1->getPositionY();
-			int gamemode = static_cast<int>(m_player1->m_savedObjectType);
+			// int gamemode = static_cast<int>(m_player1->m_savedObjectType);
+			int gamemode;
+			if (m_player1->m_isShip) { // ship = 1, cube = 0 (can add other game modes if we really need to)
+				gamemode = 1;
+			} else {
+				gamemode = 0;
+			}
 			float rotation = m_player1->getRotation();
 			float yVel = m_player1->m_yVelocity;
 
@@ -253,7 +260,7 @@ class $modify(RLCCKeyboardDispatcher, CCKeyboardDispatcher)
 		}
 		else if (down && key == cocos2d::KEY_P)
 		{
-			controls::loadFromPercent(92);
+			controls::loadFromPercent(90);
 		}
 
 		// Let other keys go through
