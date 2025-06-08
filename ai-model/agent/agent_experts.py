@@ -7,7 +7,7 @@ from collections import deque
 import math
 import config
 import cv2
-from model.dqnexperts import ExpertsModel, ExpertsModelTransformer
+from model.dqnexperts import ExpertsModel, ExpertsFromDeeperDQNModelv2
 
 from config import (
     ACTION_DIM, LR, GAMMA,
@@ -20,7 +20,7 @@ class AgentExperts:
     def __init__(self, model):
         self.action_dim = ACTION_DIM
 
-        assert type(model) == ExpertsModel or type(model) == ExpertsModelTransformer, "Only use the Experts Model"
+        assert type(model) == ExpertsModel or type(model) == ExpertsFromDeeperDQNModelv2, "Only use the Experts Model"
         
         self.device = next(model.parameters()).device
         self.model = model
@@ -40,7 +40,7 @@ class AgentExperts:
         self.death_replay_buffer = deque(maxlen=config.NSTEP)
         self.replay_buffer = deque(maxlen=BUFFER_SIZE)
 
-    def act(self, state, is_ship):
+    def act(self, state, is_ship=None):
         state = state.to(self.device)
 
         if random.random() < self.epsilon:

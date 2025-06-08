@@ -12,7 +12,7 @@ import random
 
 from gym import GeometryDashEnv
 from tcp import gdclient
-from model import ExpertsModel, ExpertsModelTransformer
+from model import ExpertsModel, ExpertsFromDeeperDQNModelv2
 from agent import AgentExperts
 import config
 
@@ -68,7 +68,7 @@ def build_state(transform):
 def train(num_episodes=50000, max_steps=5000, resume=True):
     env = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
-    model = ExpertsModelTransformer(is_train=True).to(device)
+    model = ExpertsFromDeeperDQNModelv2(is_train=True).to(device)
     agent = AgentExperts(model)
 
     start_ep = 0
