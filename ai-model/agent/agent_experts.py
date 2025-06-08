@@ -7,19 +7,20 @@ from collections import deque
 import math
 import config
 import cv2
-from model.dqnexperts import ExpertsModel
+from model.dqnexperts import ExpertsModel, ExpertsModelTransformer
 
 from config import (
     ACTION_DIM, LR, GAMMA,
     EPSILON_START, EPSILON_DECAY, EPSILON_MIN,
-    BUFFER_SIZE, BATCH_SIZE, DEATH_BATCH_SIZE
+    BUFFER_SIZE, BATCH_SIZE, DEATH_BATCH_SIZE,
+    COLOR_CHANNELS, FRAME_STACK_SIZE
 )
 
 class AgentExperts:
     def __init__(self, model):
         self.action_dim = ACTION_DIM
 
-        assert type(model) == ExpertsModel, "Only use the Experts Model"
+        assert type(model) == ExpertsModel or type(model) == ExpertsModelTransformer, "Only use the Experts Model"
         
         self.device = next(model.parameters()).device
         self.model = model
@@ -96,8 +97,8 @@ class AgentExperts:
         pred_is_ships = pred_is_ships.squeeze(-1)
 
         # Print accuracy
-        # pred_labels = (pred_is_ships > 0.5).float()  # or .int() if is_ships is int
-        # correct = torch.count_nonzero(pred_labels == is_ships)
+        pred_labels = (pred_is_ships > 0.5).float()  # or .int() if is_ships is int
+        correct = torch.count_nonzero(pred_labels == is_ships)
         # print(f"Is ship: {correct}/{pred_labels.shape[0]} Accuracy: {correct / pred_labels.shape[0]:.2f}")
 
         curr_q = pred_actions_q.gather(1, actions).squeeze() # Get the right q pred
@@ -113,6 +114,9 @@ class AgentExperts:
 
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
+
+        # Return ship pred acc
+        return correct/pred_labels.shape[0]
 
     def update_target_network(self):
         self.target_model.load_state_dict(self.model.state_dict())
