@@ -73,10 +73,12 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
     env   = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
     # model = NoisyDeeperDQNModelv2().to(device)
+    # model = DeeperDQNModelv2().to(device)
     model = ActionDeeperDQNModelv2().to(device)
     # model = DUEL_DQNModel().to(device)
     # model = smallDQN().to(device)
     agent = AgentACTION(model)
+    # agent = Agent(model)
 
     start_ep = 0 
     time_alive_per_ep = {}

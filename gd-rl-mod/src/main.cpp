@@ -72,20 +72,18 @@ class $modify(AppDelegate)
 	}
 };
 
+//Change colors 
 class $modify(MyGameManager, GameManager) {
     ccColor3B colorForIdx(int colorIdx, bool isSecondary) {
-        // Always return a custom color, e.g., bright red
         return ccColor3B{0, 0, 0};
     }
 };
 class $modify(MyPlayerObject, PlayerObject) {
     void setColor(const ccColor3B& color) {
-        // Force the color to bright red
         PlayerObject::setColor({0, 0, 0});
     }
 
     void setSecondColor(const ccColor3B& color) {
-        // Optionally override secondary color too (e.g., dark red)
         PlayerObject::setSecondColor({0, 0, 0});
     }
 };
@@ -125,7 +123,7 @@ class $modify(MyPlayLayer, PlayLayer)
 		if (m_fields->loadStates)
 		{
 			std::string path = getSourceDir() + "/safe_states/stereo_madness_states.txt";
-			// std::string path = getSourceDir() + "/safe_states/test.txt";
+			// std::string path = getSourceDir() + "/safe_states/GD_Training_Ship_states.txt";
 			loadSafeStatesFromFile(path);
 			log::info("Safe state map size: {}", g_safeStateMap.size());
 		}
@@ -188,7 +186,7 @@ class $modify(MyPlayLayer, PlayLayer)
 			}
 			float rotation = m_player1->getRotation();
 			float yVel = m_player1->m_yVelocity;
-
+			
 			auto it = g_safeStateMap.find(int_percent);
 			if ((it == g_safeStateMap.end() || currentY < it->second.y) && std::abs(int_percent - percent) < 0.05)
 			{
@@ -224,11 +222,11 @@ class $modify(MyPlayLayer, PlayLayer)
 		delete[] buffer;
 	}
 
-	void levelComplete()
-	{
-		// Don't show menu or anything, just reset the level
-		controls::resetLevel();
-	}
+	// void levelComplete()
+	// {
+	// 	// Don't show menu or anything, just reset the level
+	// 	controls::resetLevel();
+	// }
 };
 
 // ============== Debugging w/ keyboard ==============

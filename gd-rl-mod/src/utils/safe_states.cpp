@@ -32,6 +32,7 @@ void loadSafeStatesFromFile(const std::string &path)
 void saveSafeStatesToFile(const std::unordered_map<int, SafeState> &map)
 {
     std::ofstream file("src/safe_states/stereo_madness_states.txt");
+    // std::ofstream file("src/safe_states/GD_Training_Ship_states.txt");
     for (const auto &[percent, state] : map)
     {
         file << percent << " " << state.y << " " << state.gamemode << " " << state.rotation << " " << state.yVelocity << "\n";

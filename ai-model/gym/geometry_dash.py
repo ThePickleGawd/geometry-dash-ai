@@ -63,14 +63,13 @@ class GeometryDashEnv(gym.Env):
 
 
         #Code for skipping ship
-        # if (info['percent']>28 and info['percent']<46):
-        #     reward += config.BEATING_LEVEL/2
-        #     self.reset(47)
-        
-        # if (info['percent']>85.9):
-        #     done = True
-        #     reward += config.BEATING_LEVEL
-        #     print('BEAT LEVEL!!!! (cube part)')
+        if (info['percent']>28 and info['percent']<46):
+            reward += config.BEATING_LEVEL/2
+            self.reset(47)
+        if (info['percent']>85.9):
+            done = True
+            reward += config.BEATING_LEVEL
+            print('BEAT LEVEL!!!! (cube part)')
             
         #Code for skipping cube
         # if (info['percent']>46.79 and info['percent']<85):

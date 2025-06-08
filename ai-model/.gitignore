@@ -176,3 +176,13 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Geode
+
+# Models
+previousModels/
+checkpoints/
+
+# Random stuff?
+geometry-dash_ai/.cache/
+../.cache/*
