@@ -101,7 +101,29 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
     total_steps = 0
 
     for ep in range(start_ep, num_episodes):
-        pct = random.randint(1, 90) if config.RANDOM_SPAWN else 1
+        # Wacky code for random spawn
+        r = random.random()
+        if r < config.SHIP_SPAWN_PERCENTAGE:
+            # First ship area: 30.01%–46.78%
+            while True:
+                pct = random.uniform(30.01, 46.78)
+                if 30.01 < pct < 46.78:
+                    break
+        elif r < config.SHIP_SPAWN_PERCENTAGE + config.SECOND_SHIP_SPAWN_PERCENTAGE:
+            # Second ship area: 86%–90%
+            while True:
+                pct = random.uniform(86, 90)
+                if 86 < pct < 90:
+                    break
+        elif r < config.SHIP_SPAWN_PERCENTAGE + config.SECOND_SHIP_SPAWN_PERCENTAGE + config.START_SPAWN_PERCENTAGE:
+            pct = 1
+        else:
+            # Non-ship areas
+            while True:
+                pct = random.uniform(1, 86)
+                if pct < 30 or (46.79 < pct <= 86):
+                    break
+
         env.reset(pct)
 
         start_time = time.time()
