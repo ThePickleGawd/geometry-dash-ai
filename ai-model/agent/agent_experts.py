@@ -7,7 +7,7 @@ from collections import deque
 import math
 import config
 import cv2
-from model.dqnexperts import ExpertsModel, ExpertsFromDeeperDQNModelv2
+from model.dqnexperts import ExpertsModel, ExpertsFromDeeperDQNModelv2, ExpertsModelV2
 
 from config import (
     ACTION_DIM, LR, GAMMA,
@@ -20,7 +20,7 @@ class AgentExperts:
     def __init__(self, model):
         self.action_dim = ACTION_DIM
 
-        assert type(model) == ExpertsModel or type(model) == ExpertsFromDeeperDQNModelv2, "Only use the Experts Model"
+        assert type(model) == ExpertsModel or type(model) == ExpertsFromDeeperDQNModelv2 or type(model) == ExpertsModelV2, "Only use the Experts Model"
         
         self.device = next(model.parameters()).device
         self.model = model
@@ -61,9 +61,7 @@ class AgentExperts:
         for i in range(-5, 0):
             s, a, _, ns, is_ship, d = self.replay_buffer[i]
             self.replay_buffer[i] = (s, a, last_reward, ns, is_ship, d)
-
-        # Save 5th to last in buffer
-        self.death_replay_buffer.append(self.replay_buffer[-3])
+            self.death_replay_buffer.append(self.replay_buffer[i])
 
         # Visualize the death frame we saved
         # img = self.death_replay_buffer[-1][0][0, -1]  # take the most recent frame (C, H, W)

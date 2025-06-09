@@ -49,8 +49,8 @@ class GeometryDashEnv(gym.Env):
         # if (action==1 and info['percent']<86 and not ((info['percent']>30)and(info['percent']<46.79))):
         if action == 1:
             reward = config.JUMP_PUNISHMENT
-        # if (info['percent'] > self.prePercent and (info['percent']%3) < (self.prePercent%3)):
-        #     reward = config.CHECKPOINT_REWARD
+        if (info['percent'] > self.prePercent and (info['percent']%3) < (self.prePercent%3)):
+            reward = config.CHECKPOINT_REWARD
 
         if done:
             reward = config.DEATH_PUNISHMENT

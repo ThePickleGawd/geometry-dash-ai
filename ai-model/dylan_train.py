@@ -12,7 +12,7 @@ import random
 
 from gym import GeometryDashEnv
 from tcp import gdclient
-from model import ExpertsModel, ExpertsFromDeeperDQNModelv2
+from model import ExpertsModel, ExpertsFromDeeperDQNModelv2, ExpertsModelV2
 from agent import AgentExperts
 import config
 
@@ -25,7 +25,7 @@ os.makedirs("checkpoints", exist_ok=True)
 def start_geometry_dash():
     subprocess.Popen(["geode", "run"])
     print("Waiting 5s for Geometry Dash…")
-    time.sleep(5)
+    time.sleep(8)
 
 def listen_for_frame_buffer():
     try:
@@ -68,7 +68,7 @@ def build_state(transform):
 def train(num_episodes=50000, max_steps=5000, resume=True):
     env = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
-    model = ExpertsFromDeeperDQNModelv2(is_train=True).to(device)
+    model = ExpertsModel(is_train=True).to(device)
     agent = AgentExperts(model)
 
     start_ep = 0

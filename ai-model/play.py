@@ -13,6 +13,7 @@ from gym import GeometryDashEnv
 from tcp import gdclient
 from model import DQNModel
 from agent import Agent
+import random
 import config
 
 # frame_queue gets piped all frame data all the time. frame_buffer is built from frame_queue when we need to see the state
@@ -97,7 +98,8 @@ def play(num_episodes=50000, max_steps=10000, resume=True):
     total_steps = 0
 
     for ep in range(start_ep, num_episodes):
-        env.reset()
+        pct = random.uniform(1, 100)
+        env.reset(pct)
 
         total_r = 0
 

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Load checkpoint
-cp = torch.load("../checkpoints/latest.pt", map_location="cpu")
+cp = torch.load("../checkpoints/experts-6-7/latest.pt", map_location="cpu")
 time_alive_per_ep = cp.get("time_alive", {})
 epsilon_per_ep = cp.get("epsilon", {})
 reward_per_ep = cp.get("total_reward", {})
