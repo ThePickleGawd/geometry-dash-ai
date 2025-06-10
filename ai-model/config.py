@@ -3,6 +3,7 @@
 # Model
 FRAME_STACK_SIZE = 4 # How many frames to stack in state, sent to model
 COLOR_CHANNELS = 1
+VISUALS = False
 
 # Agent
 #CHANGED

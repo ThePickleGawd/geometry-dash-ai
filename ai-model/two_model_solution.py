@@ -107,6 +107,7 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
         epsilon_per_epCUBE = cp.get("epsilon", {})
         agentCube.epsilon = epsilon_per_epCUBE[start_epCUBE-1]
         print(f"CUBE Resumed at episode {start_epCUBE}")
+        agentCube.epsilon = 0
     # SHIP
     if resume and os.path.exists("checkpoints/latestSHIP.pt"):
         cp = torch.load("checkpoints/latestSHIP.pt",weights_only=False)
@@ -119,6 +120,7 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
         epsilon_per_epSHIP = cp.get("epsilon", {})
         agentShip.epsilon = epsilon_per_epSHIP[start_epSHIP-1]
         print(f"SHIP Resumed at episode {start_epSHIP}")
+        agentShip.epsilon = 0
 
     transform = v2.Compose([
         v2.Resize((128, 128)),
