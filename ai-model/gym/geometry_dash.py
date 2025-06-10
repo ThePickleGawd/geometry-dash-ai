@@ -49,8 +49,8 @@ class GeometryDashEnv(gym.Env):
         # if (action==1 and info['percent']<86 and not ((info['percent']>30)and(info['percent']<46.79))):
         if action == 1:
             reward = config.JUMP_PUNISHMENT
-        # if (info['percent'] > self.prePercent and (info['percent']%3) < (self.prePercent%3)):
-        #     reward = config.CHECKPOINT_REWARD
+        if (info['percent'] > self.prePercent and (info['percent']%3) < (self.prePercent%3)):
+            reward = config.CHECKPOINT_REWARD
 
         if done:
             reward = config.DEATH_PUNISHMENT
@@ -63,10 +63,9 @@ class GeometryDashEnv(gym.Env):
 
 
         #Code for skipping ship
-        # if (info['percent']>28 and info['percent']<46):
+        # if (info['percent']>29.6 and info['percent']<46):
         #     reward += config.BEATING_LEVEL/2
         #     self.reset(47)
-        
         # if (info['percent']>85.9):
         #     done = True
         #     reward += config.BEATING_LEVEL
@@ -76,6 +75,18 @@ class GeometryDashEnv(gym.Env):
         # if (info['percent']>46.79 and info['percent']<85):
         #     reward += config.BEATING_LEVEL/2
         #     self.reset(86)
+        
+    #Back On Track
+        #Code for skipping ship
+        # if (info['percent']>50 and info['percent']<65):
+        #     reward += config.BEATING_LEVEL/2
+        #     self.reset(66)
+            
+        #Code for skipping cube
+        # if (info['percent']>65):
+        #     done = True
+        #     reward += config.BEATING_LEVEL
+        #     print('BEAT SHIP BACK ON TRACK!!!!')
         
         if (info['percent']>99):
             done = True

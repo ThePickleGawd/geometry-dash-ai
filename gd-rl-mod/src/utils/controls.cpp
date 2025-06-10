@@ -63,6 +63,7 @@ namespace controls
             pl->loadFromCheckpoint(checkpoint);
             player->loadFromCheckpoint(checkpoint->m_player1Checkpoint);
             resetLevel();
+            pl->removeAllCheckpoints();
         }
     }
 

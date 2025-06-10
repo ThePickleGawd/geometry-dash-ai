@@ -73,17 +73,20 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
     env   = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
     # model = NoisyDeeperDQNModelv2().to(device)
-    model = ActionDeeperDQNModelv2().to(device)
+    model = DeeperDQNModelv2().to(device)
+    # model = ActionDeeperDQNModelv2().to(device)
     # model = DUEL_DQNModel().to(device)
     # model = smallDQN().to(device)
-    agent = AgentACTION(model)
+    # agent = AgentACTION(model)
+    agent = Agent(model)
+    PREVIOUS_ACTION = False
 
     start_ep = 0 
     time_alive_per_ep = {}
     epsilon_per_ep = {}
     reward_per_ep = {}
     best_time = 0
-    if config.PREVIOUS_ACTION:
+    if PREVIOUS_ACTION:
         previous_action = torch.unsqueeze(torch.zeros(2),0)
 
     # resume
@@ -125,6 +128,14 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
             # pct = random.randint(30, 90-(86-46))
             # if pct>46:
             #     pct = pct+(86-46)
+            
+        #Back On Track
+            #Cube only Random Spawn Below
+            # pct = random.randint(1, 80-(65-50))
+            # if pct>50:
+            #     pct = pct+(65-50)
+            #SHIP
+            # pct = random.randint(50,65)
         else:
             pct = config.SET_SPAWN
         env.reset(pct)
@@ -150,7 +161,7 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
             #     totalvisits += env.percentCount[i][int(previous_percent)]
             
             # Get predicted action
-            if config.PREVIOUS_ACTION:
+            if PREVIOUS_ACTION:
                 action = agent.act(state,previous_action)
                 if action==1: previous_action = torch.unsqueeze(torch.Tensor([0,1]),0)
                 else:         previous_action = torch.unsqueeze(torch.Tensor([1,0]),0)
@@ -179,7 +190,7 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
                 stupid_death = True
                 break
             #CHANGED to clip reward
-            if config.PREVIOUS_ACTION:
+            if PREVIOUS_ACTION:
                 agent.remember(state, action, min(max(reward,-1),1), next_state, done,previous_action)
             else: agent.remember(state, action, min(max(reward,-1),1), next_state, done)
             #for NEWSTATE
