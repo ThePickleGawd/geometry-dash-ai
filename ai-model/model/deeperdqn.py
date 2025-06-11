@@ -6,6 +6,7 @@ from .NoisyNet import NoisyLinear, LazyNoisyLinear
 import matplotlib.pyplot as plt
 import math
 import numpy as np
+import config
 
 
 class ResidualBlock(nn.Module):
@@ -210,7 +211,8 @@ class ActionDeeperDQNModelv2(nn.Module):
         x = x.view(B, T * C, H, W)
 
         # FOR VISUALS:
-        self.record_visuals(x)
+        if config.VISUALS:
+            self.record_visuals(x)
 
         x = self.conv(x)
         x = torch.flatten(x, start_dim=1)

@@ -74,6 +74,7 @@ class $modify(AppDelegate)
 	}
 };
 
+<<<<<<< HEAD
 class $modify(MyGameManager, GameManager)
 {
 	ccColor3B colorForIdx(int colorIdx, bool isSecondary)
@@ -95,6 +96,22 @@ class $modify(MyPlayerObject, PlayerObject)
 		// Optionally override secondary color too (e.g., dark red)
 		PlayerObject::setSecondColor({0, 0, 0});
 	}
+=======
+//Change colors 
+class $modify(MyGameManager, GameManager) {
+    ccColor3B colorForIdx(int colorIdx, bool isSecondary) {
+        return ccColor3B{0, 0, 0};
+    }
+};
+class $modify(MyPlayerObject, PlayerObject) {
+    void setColor(const ccColor3B& color) {
+        PlayerObject::setColor({0, 0, 0});
+    }
+
+    void setSecondColor(const ccColor3B& color) {
+        PlayerObject::setSecondColor({0, 0, 0});
+    }
+>>>>>>> e18ae1f616611e8239330c71acf29d6938731b35
 };
 
 // ============== Overload jump request ==============
@@ -134,7 +151,8 @@ class $modify(MyPlayLayer, PlayLayer)
 		if (m_fields->loadStates)
 		{
 			std::string path = getSourceDir() + "/safe_states/stereo_madness_states.txt";
-			// std::string path = getSourceDir() + "/safe_states/test.txt";
+			// std::string path = getSourceDir() + "/safe_states/GD_Training_Ship_states.txt";
+			// std::string path = getSourceDir() + "/safe_states/back_on_track.txt";
 			loadSafeStatesFromFile(path);
 			log::info("Safe state map size: {}", g_safeStateMap.size());
 		}
@@ -200,7 +218,7 @@ class $modify(MyPlayLayer, PlayLayer)
 			}
 			float rotation = m_player1->getRotation();
 			float yVel = m_player1->m_yVelocity;
-
+			
 			auto it = g_safeStateMap.find(int_percent);
 			if ((it == g_safeStateMap.end() || currentY < it->second.y) && std::abs(int_percent - percent) < 0.05)
 			{
