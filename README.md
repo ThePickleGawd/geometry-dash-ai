@@ -1,14 +1,47 @@
 # Reinforcement Learning for Geometry Dash
 
-A Deep Q Network to learn Geometry Dash and a C++ mod to control the game. Our final project for UCSB CS 190A: Machine Learning.
+A DQN framework for playing Geometry Dash. Our project contains two parts:
+
+1. A suite of DQN agents, models, and a custom gymnasium environment. `/ai-model`
+2. A C++ mod to control the game. `/gd-rl-mod`
+
+[Paper](/docs/paper.pdf) | [Demo](https://youtu.be/PKDMGPf-PEA)
 
 ![demo](docs/demo.gif)
 
 ## Setup
 
-TODO: Setup ai model and geode mod (mac only)
+### AI Model
 
-## Data Pipeline
+```bash
+# Install uv
+pip install uv
 
-- Python commands C++ mod to step, restart, etc via tcp `localhost:22222`
-- C++ sends screen buffer to Python via tcp `localhost:22223`
+# Install
+cd ai-model
+uv sync
+
+# Download or train model checkpoints to /checkpoints
+```
+
+### C++ Mod
+
+1. Setup Geode. More details: https://docs.geode-sdk.org/getting-started/geode-cli#macos
+
+```bash
+# Install Geode (tested on v4.4.0)
+brew install geode-sdk/geode/geode-cli
+
+# Setup profile
+geode config setup
+
+# Install SDK
+geode sdk install
+geode sdk install-binaries
+```
+
+2. Build the mod
+
+```bash
+geode build
+```
