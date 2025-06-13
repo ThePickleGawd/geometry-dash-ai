@@ -7,7 +7,15 @@ A DQN framework for playing Geometry Dash. Our project contains two parts:
 
 [Paper](/docs/paper.pdf) | [Demo](https://youtu.be/PKDMGPf-PEA)
 
+## Demo
+
+Standard DQN Agent:
+
 ![demo](docs/demo.gif)
+
+Mixture-of-Experts DQN Agent:
+
+https://github.com/user-attachments/assets/d316da5f-1fc3-4a10-9835-31f90c44d017
 
 ## Setup
 
