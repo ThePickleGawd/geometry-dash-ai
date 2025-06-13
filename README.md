@@ -11,6 +11,8 @@ A DQN framework for playing Geometry Dash. Our project contains two parts:
 
 ## Setup
 
+Since the mod only works on Mac, this is the only supported platform. See a side note about Windows below.
+
 ### AI Model
 
 ```bash
@@ -21,7 +23,12 @@ pip install uv
 cd ai-model
 uv sync
 
-# Download or train model checkpoints to /checkpoints
+# Train (change resume=False or True near end of script)
+uv run train.py
+
+# Play
+# Ensure model checkpoints is in /checkpoints/latest.pt
+uv run play.py
 ```
 
 ### C++ Mod
@@ -45,3 +52,10 @@ geode sdk install-binaries
 ```bash
 geode build
 ```
+
+### Windows
+
+The socket and OpenGL libraries are different for Mac vs. Windows, and we've only got it to work for Mac. Some progress is made in the `windows` branch, here are some clues.
+
+- Platform specific imports: [platform.hpp](https://github.com/ThePickleGawd/geometry-dash-ai/blob/windows/gd-rl-mod/src/utils/platform.hpp)
+- Error about socket library redefinition if we include "Windows.h", otherwise it's library not found [server.cpp](https://github.com/ThePickleGawd/geometry-dash-ai/blob/windows/gd-rl-mod/src/utils/server.cpp)
