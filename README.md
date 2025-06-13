@@ -9,6 +9,8 @@ A DQN framework for playing Geometry Dash. Our project contains two parts:
 
 ## Demo
 
+https://youtu.be/PKDMGPf-PEA
+
 Standard DQN Agent:
 
 ![demo](docs/demo.gif)
