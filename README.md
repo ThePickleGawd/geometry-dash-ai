@@ -17,7 +17,7 @@ Standard DQN Agent:
 
 Mixture-of-Experts DQN Agent:
 
-https://github.com/user-attachments/assets/d316da5f-1fc3-4a10-9835-31f90c44d017
+https://github.com/user-attachments/assets/5064e9aa-ddaa-475a-b2cd-501818d8cc08
 
 ## Setup
 
