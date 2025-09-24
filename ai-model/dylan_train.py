@@ -13,7 +13,7 @@ import random
 from gym import GeometryDashEnv
 from tcp import gdclient
 from model import ExpertsModel, ExpertsFromDeeperDQNModelv2, ExpertsModelV2
-from agent import AgentExperts
+from agent.agent_MoE_GRPO import AgentMoE_GRPO
 import config
 
 # frame_queue gets piped all frame data all the time. frame_buffer is built from frame_queue when we need to see the state
@@ -22,10 +22,12 @@ frame_buffer = deque(maxlen=config.FRAME_STACK_SIZE)
 
 os.makedirs("checkpoints", exist_ok=True)
 
+
 def start_geometry_dash():
     subprocess.Popen(["geode", "run"])
     print("Waiting 5s for Geometry Dash…")
     time.sleep(8)
+
 
 def listen_for_frame_buffer():
     try:
@@ -36,16 +38,17 @@ def listen_for_frame_buffer():
                 break
 
             tensor = torch.from_numpy(frame).unsqueeze(0)
-            tensor = tensor.flip(-2) # vertical flip
+            tensor = tensor.flip(-2)  # vertical flip
 
             if frame_queue.full():
                 _ = frame_queue.get_nowait()
             frame_queue.put(tensor)
-            
+
     except Exception as e:
         print("Frame listener error:", e)
     finally:
         gdclient.close()
+
 
 def build_state(transform):
     while len(frame_buffer) < config.FRAME_STACK_SIZE:
@@ -65,14 +68,15 @@ def build_state(transform):
     stacked = torch.cat(processed, dim=0).unsqueeze(0)
     return stacked
 
+
 def train(num_episodes=50000, max_steps=5000, resume=True):
     env = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
     model = ExpertsModel(is_train=True).to(device)
-    agent = AgentExperts(model)
+    agent = AgentMoE_GRPO(model)
 
     start_ep = 0
-    best_percent = 0    
+    best_percent = 0
     time_alive_per_ep = {}
     epsilon_per_ep = {}
     reward_per_ep = {}
@@ -88,13 +92,15 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
         reward_per_ep = cp.get("total_reward", {})
         epsilon_per_ep = cp.get("epsilon", {})
         ship_acc_per_ep = cp.get("ship_acc", {})
-        agent.epsilon = epsilon_per_ep[len(epsilon_per_ep)-1]
+        agent.epsilon = epsilon_per_ep[len(epsilon_per_ep) - 1]
         print(f"Resumed at episode {start_ep}")
 
-    transform = v2.Compose([
-        v2.Resize((128, 128)),
-        v2.ToDtype(torch.float32, scale=True),
-    ])
+    transform = v2.Compose(
+        [
+            v2.Resize((128, 128)),
+            v2.ToDtype(torch.float32, scale=True),
+        ]
+    )
 
     print("Start the level! You have 5 seconds before training starts")
     time.sleep(5)
@@ -103,12 +109,12 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
 
     for ep in range(start_ep, num_episodes):
         r = random.random()
-        if r < config.SHIP_SPAWN_PERCENTAGE:
+        if r < config.RANDOM_SPAWN_PERCENTAGE:
             while True:
                 pct = random.uniform(1, 100)
                 if (30.01 < pct < 46.78) or (86 < pct < 90):
                     break
-        elif r < config.SHIP_SPAWN_PERCENTAGE + config.START_SPAWN_PERCENTAGE:
+        elif r < config.RANDOM_SPAWN_PERCENTAGE + config.START_SPAWN_PERCENTAGE:
             pct = config.SET_SPAWN
         else:
             while True:
@@ -120,13 +126,13 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
         start_time = time.time()
         total_r = 0
         state = build_state(transform)
-        info = { "percent": pct }
+        info = {"percent": pct}
         is_ship = False
         episode_ship_accs = []
 
         pbar = tqdm(range(max_steps), desc=f"Ep{ep+1}")
         for step in pbar:
-            if info['percent'] < 86 and not (30 < info['percent'] < 46.79):
+            if info["percent"] < 86 and not (30 < info["percent"] < 46.79):
                 is_ship = False
             else:
                 is_ship = True
@@ -142,8 +148,8 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
             episode_ship_accs.append(ship_pred_acc)
 
             state = next_state
-            if info['percent'] > best_percent:
-                best_percent = info['percent']
+            if info["percent"] > best_percent:
+                best_percent = info["percent"]
 
             total_steps += 1
             if total_steps % config.STEPS_BEFORE_TARGET_UPDATE == 0:
@@ -161,7 +167,6 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
         reward_per_ep[ep] = total_r
         valid_accs = [a for a in episode_ship_accs if a is not None]
         ship_acc_per_ep[ep] = sum(valid_accs) / len(valid_accs) if valid_accs else 0.0
-
 
         print(f"Ep {ep+1} → reward {total_r:.1f}")
 
@@ -183,6 +188,7 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
 
     env.close()
     print("\nBEST PERCENTAGE:", best_percent)
+
 
 if __name__ == "__main__":
     start_geometry_dash()
