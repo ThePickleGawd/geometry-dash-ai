@@ -73,13 +73,13 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
     env   = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
     # model = NoisyDeeperDQNModelv2().to(device)
-    model = DeeperDQNModelv2().to(device)
-    # model = ActionDeeperDQNModelv2().to(device)
+    # model = DeeperDQNModelv2().to(device)
+    model = ActionDeeperDQNModelv2().to(device)
     # model = DUEL_DQNModel().to(device)
     # model = smallDQN().to(device)
-    # agent = AgentACTION(model)
-    agent = Agent(model)
-    PREVIOUS_ACTION = False
+    agent = AgentACTION(model)
+    # agent = Agent(model)
+    PREVIOUS_ACTION = True
 
     start_ep = 0 
     time_alive_per_ep = {}
@@ -91,7 +91,7 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
 
     # resume
     if resume and os.path.exists("checkpoints/latest.pt"):
-        cp = torch.load("checkpoints/latest.pt",weights_only=False)
+        cp = torch.load("checkpoints/15909_17.4.pt",weights_only=False)
         agent.model.load_state_dict(cp["model_state"])
         agent.target_model.load_state_dict(cp["model_state"])
         agent.optimizer.load_state_dict(cp["optimizer_state"])

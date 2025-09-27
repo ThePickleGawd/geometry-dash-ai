@@ -128,8 +128,8 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
     ])
 
     # TODO: Fix waiting hack
-    print("Start the level! You have 5 seconds before training starts")
-    time.sleep(5)
+    print("Start the level! You have 10 seconds before training starts")
+    time.sleep(10)
 
     total_steps = 0
 
@@ -137,6 +137,7 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
     epSHIP = start_epSHIP
 
     for epIndex in range(max(start_epSHIP,start_epCUBE), num_episodes):
+        print('wins:',env.numWins)
         #cube 1,29.76 47,85.9
         #ship 30,46.79 86,98
         best_percent = 0   
@@ -177,7 +178,8 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
             
             #CHECK IF IN SHIP OR CUBE TO SWAP MODELS
             
-            if(previous_percent>30 and previous_percent < 46.93 or previous_percent > 85.9):
+            if(previous_percent>49.75 and previous_percent < 66.16):
+            # if(previous_percent>30 and previous_percent < 46.93 or previous_percent > 85.9):
                 #in ship
                 if gamemode != 'ship':
                     print('changed to ship')

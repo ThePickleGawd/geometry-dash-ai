@@ -73,13 +73,13 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
     env   = GeometryDashEnv()
     device = "cuda" if torch.cuda.is_available() else "mps"
     # model = NoisyDeeperDQNModelv2().to(device)
-    model = DeeperDQNModelv2().to(device)
-    # model = ActionDeeperDQNModelv2().to(device)
+    # model = DeeperDQNModelv2().to(device)
+    model = ActionDeeperDQNModelv2().to(device)
     # model = DUEL_DQNModel().to(device)
     # model = smallDQN().to(device)
-    # agent = AgentACTION(model)
-    agent = Agent(model)
-    PREVIOUS_ACTION = False
+    agent = AgentACTION(model)
+    # agent = Agent(model)
+    PREVIOUS_ACTION = True
 
     start_ep = 0 
     time_alive_per_ep = {}
@@ -119,7 +119,7 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
         #ship 30,46.79 86,98
         best_percent = 0   
         if random.random() < config.RANDOM_SPAWN_PERCENTAGE:
-            pct = random.randint(1,90)
+            # pct = random.randint(1,95)
             #Cube only Random Spawn Below
             # pct = random.randint(1, 80-(47-29))
             # if pct>29:
@@ -135,7 +135,7 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
             # if pct>50:
             #     pct = pct+(65-50)
             #SHIP
-            # pct = random.randint(50,65)
+            pct = random.randint(50,65)
         else:
             pct = config.SET_SPAWN
         env.reset(pct)

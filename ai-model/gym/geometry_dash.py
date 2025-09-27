@@ -27,6 +27,7 @@ class GeometryDashEnv(gym.Env):
         # State
         self.holding = False
         self.prePercent = 0
+        self.numWins = 0
 
     def step(self, action, start_percent=1):
         # INFO contains if dead and the percentage
@@ -83,7 +84,7 @@ class GeometryDashEnv(gym.Env):
         #     self.reset(66)
             
         #Code for skipping cube
-        # if (info['percent']>65):
+        # if (info['percent']>66):
         #     done = True
         #     reward += config.BEATING_LEVEL
         #     print('BEAT SHIP BACK ON TRACK!!!!')
@@ -92,6 +93,7 @@ class GeometryDashEnv(gym.Env):
             done = True
             reward += config.BEATING_LEVEL
             print('BEAT LEVEL!!!!')
+            self.numWins +=1
 
 
         self.prePercent = info['percent']
