@@ -138,7 +138,7 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
             pct = random.randint(50,65)
         else:
             pct = config.SET_SPAWN
-        env.reset(pct)
+        env.reset(0)
 
         start_time = time.time()
         total_r = 0
@@ -171,7 +171,7 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
 
             img = state[0, -1]  # take the most recent frame (C, H, W)
 
-            show_img = True
+            show_img = False
             if show_img:
                 img_np = img.permute(1, 2, 0).cpu().numpy()  # CHW → HWC
                 img_np = (img_np * 255).astype('uint8')      # scale to [0, 255] if float32
@@ -270,4 +270,4 @@ if __name__ == "__main__":
     start_geometry_dash()
     gdclient.connect()
     Thread(target=listen_for_frame_buffer, daemon=True).start()
-    train(resume=True)
+    train(resume=False)

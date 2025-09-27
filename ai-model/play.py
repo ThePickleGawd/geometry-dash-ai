@@ -11,8 +11,9 @@ import cv2
 
 from gym import GeometryDashEnv
 from tcp import gdclient
-from model import DQNModel, DUEL_DQNModel, DeeperDQNModel, DeeperDQNModelv2, NoisyDeeperDQNModelv2, smallDQN, ActionDeeperDQNModelv2
-from agent import Agent, AgentACTION
+from model import DQNModel
+from agent import Agent
+import random
 import config
 import random
 import math
@@ -115,21 +116,7 @@ def train(num_episodes=50000, max_steps=5000, resume=False):
     total_steps = 0
 
     for ep in range(start_ep, num_episodes):
-        #cube 1,29.76 47,85.9
-        #ship 30,46.79 86,98
-        best_percent = 0   
-        if random.random() < config.RANDOM_SPAWN_PERCENTAGE:
-            pct = random.randint(1,90)
-            #Cube only Random Spawn Below
-            # pct = random.randint(1, 80-(47-29))
-            # if pct>29:
-            #     pct = pct+(47-29)
-            #SHIP
-            # pct = random.randint(30, 90-(86-46))
-            # if pct>46:
-            #     pct = pct+(86-46)
-        else:
-            pct = config.SET_SPAWN
+        pct = random.uniform(1, 100)
         env.reset(pct)
 
         start_time = time.time()

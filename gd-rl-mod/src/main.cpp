@@ -46,16 +46,18 @@ $on_mod(Loaded)
 	log::info("Mod loaded, let's setup tcp server");
 	tcpserver::start();
 
-    const float fpsCap = 60.0f * SPEED_MULTIPLIER;
+	const float fpsCap = 60.0f * SPEED_MULTIPLIER;
 
-    auto director = cocos2d::CCDirector::sharedDirector();
-    if (director != nullptr) {
-        log::info("Setting FPS cap to {}", fpsCap);
-        director->setAnimationInterval(1.0f / fpsCap);
-    } else {
-        log::warn("CCDirector not yet available!");
-    }
-
+	auto director = cocos2d::CCDirector::sharedDirector();
+	if (director != nullptr)
+	{
+		log::info("Setting FPS cap to {}", fpsCap);
+		director->setAnimationInterval(1.0f / fpsCap);
+	}
+	else
+	{
+		log::warn("CCDirector not yet available!");
+	}
 }
 
 // ============== Stop Game from Pausing ==============
@@ -72,6 +74,29 @@ class $modify(AppDelegate)
 	}
 };
 
+<<<<<<< HEAD
+class $modify(MyGameManager, GameManager)
+{
+	ccColor3B colorForIdx(int colorIdx, bool isSecondary)
+	{
+		// Always return a custom color, e.g., bright red
+		return ccColor3B{0, 0, 0};
+	}
+};
+class $modify(MyPlayerObject, PlayerObject)
+{
+	void setColor(const ccColor3B &color)
+	{
+		// Force the color to bright red
+		PlayerObject::setColor({0, 0, 0});
+	}
+
+	void setSecondColor(const ccColor3B &color)
+	{
+		// Optionally override secondary color too (e.g., dark red)
+		PlayerObject::setSecondColor({0, 0, 0});
+	}
+=======
 //Change colors 
 class $modify(MyGameManager, GameManager) {
     ccColor3B colorForIdx(int colorIdx, bool isSecondary) {
@@ -86,6 +111,7 @@ class $modify(MyPlayerObject, PlayerObject) {
     void setSecondColor(const ccColor3B& color) {
         PlayerObject::setSecondColor({0, 0, 0});
     }
+>>>>>>> e18ae1f616611e8239330c71acf29d6938731b35
 };
 
 // ============== Overload jump request ==============
@@ -98,10 +124,12 @@ class $modify(MyPlayerObject, PlayerObject) {
 // 	}
 // };
 
-struct $modify(MyGameSpeedFix, GJBaseGameLayer) {
-    void update(float dt) {
-        GJBaseGameLayer::update(dt / SPEED_MULTIPLIER);
-    }
+struct $modify(MyGameSpeedFix, GJBaseGameLayer)
+{
+	void update(float dt)
+	{
+		GJBaseGameLayer::update(dt / SPEED_MULTIPLIER);
+	}
 };
 
 // ============== Main Game Loop ==============
@@ -180,9 +208,12 @@ class $modify(MyPlayLayer, PlayLayer)
 			float currentY = m_player1->getPositionY();
 			// int gamemode = static_cast<int>(m_player1->m_savedObjectType);
 			int gamemode;
-			if (m_player1->m_isShip) { // ship = 1, cube = 0 (can add other game modes if we really need to)
+			if (m_player1->m_isShip)
+			{ // ship = 1, cube = 0 (can add other game modes if we really need to)
 				gamemode = 1;
-			} else {
+			}
+			else
+			{
 				gamemode = 0;
 			}
 			float rotation = m_player1->getRotation();

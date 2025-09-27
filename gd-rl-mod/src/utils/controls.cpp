@@ -47,11 +47,14 @@ namespace controls
             player->m_yVelocity = state.yVelocity;
 
             // if ((percent >= 29.79 && percent <= 46.92) || percent >= 85.7) { // hard-coded ship intervals for stereo madness
-            if (state.gamemode == 1) {
+            if (state.gamemode == 1)
+            {
                 player->m_isShip = true;
                 player->resetPlayerIcon();
                 log::info("SHIPPPPPPPPPPPPP at percent {}", percent);
-            } else {
+            }
+            else
+            {
                 player->m_isShip = false;
                 player->resetPlayerIcon();
             }
