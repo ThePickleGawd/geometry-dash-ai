@@ -1,0 +1,1 @@
+imported cube att 5000, played on whole level till 6000, then switched to action

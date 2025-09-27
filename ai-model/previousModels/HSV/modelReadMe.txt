@@ -1,0 +1,1 @@
+This folder has a bunch of models trained in various ways, the cube models use the DeeperDQNModelv2 architecture while the ship uses ActionDeeperDQNModelv2
