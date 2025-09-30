@@ -49,3 +49,6 @@ QWEN_PROMPT_GRID_SIZE = 8
 QWEN_PROMPT_STR_THRESHOLD = 0.15
 QWEN_MAX_PROMPT_TOKENS = 320
 QWEN_ACTION_TOKENS = ("<stay>", "<jump>")
+
+# DinoV3 settings
+DINOV3_MODEL_ID = os.environ.get("DINOV3_MODEL_ID", "facebook/dinov3-vits16-pretrain-lvd1689m")

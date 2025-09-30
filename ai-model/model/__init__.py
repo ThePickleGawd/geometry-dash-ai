@@ -8,3 +8,4 @@ from model.deeperdqn import NoisyDeeperDQNModelv2
 from model.deeperdqn import smallDQN
 from model.deeperdqn import ActionDeeperDQNModelv2
 from model.dqnexperts import ExpertsModel, ExpertsFromDeeperDQNModelv2, ExpertsModelV2
+from model.dinov3 import DinoV3ExpertsModel
