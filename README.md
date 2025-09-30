@@ -7,6 +7,8 @@ A DQN framework for playing Geometry Dash. Our project contains two parts:
 
 [Paper](/docs/paper.pdf) | [Demo](https://youtu.be/PKDMGPf-PEA)
 
+Update (9/30/25): Initial support for MLLMs and DinoV3 backbone, with GRPO training!
+
 ## Demo
 
 https://youtu.be/PKDMGPf-PEA
