@@ -1,4 +1,5 @@
 # See README for more details
+import os
 
 # Model
 FRAME_STACK_SIZE = 4  # How many frames to stack in state, sent to model
@@ -41,3 +42,10 @@ DEATH_BATCH_SIZE = 4
 
 NSTEP = 1
 PERCENT_BUFFER_SIZE = 1000
+
+# LLM / Qwen settings
+QWEN_MODEL_PATH = os.environ.get("QWEN_MODEL_PATH", "Qwen/Qwen2.5-VL-3B-Instruct")
+QWEN_PROMPT_GRID_SIZE = 8
+QWEN_PROMPT_STR_THRESHOLD = 0.15
+QWEN_MAX_PROMPT_TOKENS = 320
+QWEN_ACTION_TOKENS = ("<stay>", "<jump>")

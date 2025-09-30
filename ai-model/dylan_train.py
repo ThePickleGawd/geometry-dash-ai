@@ -12,8 +12,7 @@ import random
 
 from gym import GeometryDashEnv
 from tcp import gdclient
-from model import ExpertsModel, ExpertsFromDeeperDQNModelv2, ExpertsModelV2
-from agent.agent_MoE_GRPO import AgentMoE_GRPO
+from agent import AgentQwenGRPO
 import config
 
 # frame_queue gets piped all frame data all the time. frame_buffer is built from frame_queue when we need to see the state
@@ -71,9 +70,7 @@ def build_state(transform):
 
 def train(num_episodes=50000, max_steps=5000, resume=True):
     env = GeometryDashEnv()
-    device = "cuda" if torch.cuda.is_available() else "mps"
-    model = ExpertsModel(is_train=True).to(device)
-    agent = AgentMoE_GRPO(model)
+    agent = AgentQwenGRPO()
 
     start_ep = 0
     best_percent = 0
@@ -85,7 +82,6 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
     if resume and os.path.exists("checkpoints/latest.pt"):
         cp = torch.load("checkpoints/latest.pt")
         agent.model.load_state_dict(cp["model_state"])
-        agent.target_model.load_state_dict(cp["model_state"])
         agent.optimizer.load_state_dict(cp["optimizer_state"])
         start_ep = cp["episode"] + 1
         time_alive_per_ep = cp.get("time_alive", {})
@@ -144,8 +140,8 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
 
             next_state = build_state(transform)
             agent.remember(state, action, reward, next_state, is_ship, done)
-            ship_pred_acc = agent.train()
-            episode_ship_accs.append(ship_pred_acc)
+            train_metric = agent.train()
+            episode_ship_accs.append(train_metric)
 
             state = next_state
             if info["percent"] > best_percent:
@@ -165,7 +161,7 @@ def train(num_episodes=50000, max_steps=5000, resume=True):
         time_alive_per_ep[ep] = time_alive
         epsilon_per_ep[ep] = agent.epsilon
         reward_per_ep[ep] = total_r
-        valid_accs = [a for a in episode_ship_accs if a is not None]
+        valid_accs = [a for a in episode_ship_accs if isinstance(a, (int, float))]
         ship_acc_per_ep[ep] = sum(valid_accs) / len(valid_accs) if valid_accs else 0.0
 
         print(f"Ep {ep+1} → reward {total_r:.1f}")
